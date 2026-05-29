@@ -250,10 +250,9 @@
       </div>
       <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
-    
+
     <div class="card" id="wineCard"></div>
-    <div id="navBtns" class="nav-buttons">
-      <button class="btn btn-ghost" id="backBtn" onclick="goBack()">← Volver</button>
+    <div id="navBtns" class="nav-buttons single">
       <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled>Siguiente →</button>
     </div>
     <div style="margin:0 16px;">
@@ -281,7 +280,10 @@
       <div style="font-family:'Playfair Display',serif; font-size:22px; color:var(--gold-light); margin-bottom:6px;" id="orgWineLabel">Vino 1 de 6</div>
       <p style="font-size:12px; color:rgba(253,246,236,0.5); margin-bottom:20px;">Cuando todos hayan probado el vino, pasa al siguiente.</p>
       <div class="ranking-list" id="orgRanking" style="margin-bottom:20px;"></div>
-      <button class="btn btn-gold" id="orgNextBtn" onclick="organizerNext()">Siguiente vino →</button>
+      <div class="nav-buttons" style="margin:0 0 0 0;">
+        <button class="btn btn-ghost" id="orgPrevBtn" onclick="organizerPrev()">← Vino anterior</button>
+        <button class="btn btn-gold" id="orgNextBtn" onclick="organizerNext()">Siguiente vino →</button>
+      </div>
     </div>
   </div>
 
@@ -755,18 +757,32 @@ function showOrganizerPanel() {
 
 function updateOrganizerPanel(idx) {
   const label = document.getElementById('orgWineLabel');
-  const btn = document.getElementById('orgNextBtn');
+  const btnNext = document.getElementById('orgNextBtn');
+  const btnPrev = document.getElementById('orgPrevBtn');
   if (label) label.textContent = `Vino ${idx+1} de ${wines.length}`;
-  if (btn) {
+  if (btnPrev) btnPrev.disabled = idx === 0;
+  if (btnNext) {
     if (idx >= wines.length - 1) {
-      btn.textContent = '🏁 Finalizar Cata';
-      btn.onclick = organizerFinish;
+      btnNext.textContent = '🏁 Finalizar Cata';
+      btnNext.onclick = organizerFinish;
     } else {
-      btn.textContent = `Siguiente vino → (${idx+2}/${wines.length})`;
-      btn.onclick = organizerNext;
+      btnNext.textContent = `Siguiente vino → (${idx+2}/${wines.length})`;
+      btnNext.onclick = organizerNext;
     }
   }
 }
+
+window.organizerPrev = async function() {
+  if (!firebaseReady) return;
+  const { ref, get, update } = window._fb;
+  const snap = await get(ref(db, `rooms/${roomCode}/currentWineIndex`));
+  const current = snap.val() || 0;
+  if (current > 0) {
+    const prev = current - 1;
+    await update(ref(db, `rooms/${roomCode}`), { currentWineIndex: prev });
+    showToast(`← Vino ${prev+1} — volviendo atrás`);
+  }
+};
 
 window.organizerNext = async function() {
   if (!firebaseReady) return;
