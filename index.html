@@ -666,6 +666,36 @@ window.nextWine = async function() {
   const wineAnsweredNow = currentWine;
   const isLast = wineAnsweredNow >= wines.length - 1;
 
+  // Si veníamos editando y aún no hemos llegado al vino del organizador,
+  // avanzar al siguiente vino (no saltar directamente al del organizador)
+  if (editingPrev && wineAnsweredNow < orgCurrentWine) {
+    // Subir score/completed en Firebase con lo que hay hasta ahora
+    if (firebaseReady) {
+      const { ref, update } = window._fb;
+      const score = answers.filter(a => a && a.correct).length;
+      const completed = answers.filter(a => a && a.guess).length;
+      const updates = {};
+      updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
+      updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
+      updates[`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`] = wineAnsweredNow;
+      if (answers[wineAnsweredNow] && answers[wineAnsweredNow].rating) {
+        updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
+      }
+      await update(ref(db), updates);
+    }
+    // Avanzar al siguiente vino manteniendo editingPrev activo
+    currentWine++;
+    selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
+    selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
+    // Si ya llegamos al vino del organizador, salir del modo edición
+    if (currentWine >= orgCurrentWine) editingPrev = false;
+    renderWine();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    return;
+  }
+
+  editingPrev = false;
+
   if (firebaseReady) {
     const { ref, update } = window._fb;
     const score = answers.filter(a => a && a.correct).length;
@@ -677,20 +707,9 @@ window.nextWine = async function() {
     if (answers[wineAnsweredNow] && answers[wineAnsweredNow].rating) {
       updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
     }
-    if (editingPrev && wineAnsweredNow < orgCurrentWine) {
-      editingPrev = false;
-      currentWine = orgCurrentWine;
-      selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
-      selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
-      await update(ref(db), updates);
-      renderWine();
-      return;
-    }
     if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
     await update(ref(db), updates);
   }
-
-  editingPrev = false;
 
   if (isLast) {
     document.getElementById('tastingScreen').classList.add('hidden');
