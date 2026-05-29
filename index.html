@@ -563,9 +563,20 @@ function updateOrganizerButtons() {
   }
 }
 
-window.organizerNext = function() {
+async function resetPlayersAnsweredFlag() {
+  if (!firebaseReady) return;
+  const { ref, get, update } = window._fb;
+  const snap = await get(ref(db, `rooms/${roomCode}/players`));
+  const players = snap.val() || {};
+  const updates = {};
+  Object.keys(players).forEach(pid => {
+    updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1;
+  });
+  await update(ref(db), updates);
+}
+
+window.organizerNext = async function() {
   if (currentWine >= wines.length - 1) {
-    // Finalize
     if (firebaseReady) {
       const { ref, update } = window._fb;
       update(ref(db, `rooms/${roomCode}`), { status:'podium' });
@@ -575,6 +586,7 @@ window.organizerNext = function() {
     return;
   }
   currentWine++;
+  await resetPlayersAnsweredFlag();
   if (firebaseReady) {
     const { ref, update } = window._fb;
     update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine });
@@ -582,9 +594,10 @@ window.organizerNext = function() {
   updateOrganizerButtons();
 };
 
-window.organizerPrev = function() {
+window.organizerPrev = async function() {
   if (currentWine <= 0) return;
   currentWine--;
+  await resetPlayersAnsweredFlag();
   if (firebaseReady) {
     const { ref, update } = window._fb;
     update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine });
