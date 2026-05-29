@@ -565,16 +565,25 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
-// Al pulsar "← Anterior": borra TODAS las respuestas guardadas
-// → los 6 vinos quedan completamente libres para ser seleccionados de nuevo
+// Al pulsar "← Anterior": retrocede un vino SIN borrar respuestas guardadas.
+// Las respuestas previas se mantienen y se restauran al navegar.
+// Solo se liberan los bloqueos de opciones ya usadas para permitir reasignación libre.
 window.goToPrevWine = function() {
   if (currentWine <= 0) return;
-  // Limpiar todas las respuestas desde el primero hasta el actual inclusive
-  for (let i = 0; i <= currentWine; i++) answers[i] = null;
+  // Guardar lo que haya seleccionado en el vino actual antes de salir
+  if (selectedOption) {
+    const isCorrect = selectedOption === wines[currentWine].correctAnswer;
+    answers[currentWine] = {
+      wineId: wines[currentWine].id, wineName: wines[currentWine].name,
+      correctAnswer: wines[currentWine].correctAnswer,
+      guess: selectedOption, rating: selectedRating, correct: isCorrect
+    };
+  }
   currentWine--;
   editingPrev = true;
-  selectedOption = null;
-  selectedRating = null;
+  // Restaurar selección guardada del vino al que volvemos (si existe)
+  selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
+  selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
   renderWine();
 };
 
