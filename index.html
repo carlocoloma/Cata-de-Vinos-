@@ -74,7 +74,6 @@
   .rating-btn { flex:1; min-width:26px; max-width:40px; height:36px; border:1.5px solid rgba(201,168,76,0.25); border-radius:8px; background:rgba(0,0,0,0.25); color:rgba(253,246,236,0.6); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; touch-action:manipulation; -webkit-appearance:none; font-family:'Lato',sans-serif; }
   .rating-btn:active { transform:scale(0.92); }
   .rating-btn.selected { background:linear-gradient(135deg,var(--gold),#a07830); color:var(--wine-dark); border-color:var(--gold); box-shadow:0 0 10px rgba(201,168,76,0.3); }
-  /* ORGANIZER PANEL */
   .org-panel { margin:0 16px 20px; }
   .org-wine-indicator { text-align:center; background:rgba(0,0,0,0.3); border:1px solid var(--gold); border-radius:16px; padding:20px; margin-bottom:16px; }
   .org-wine-num { font-family:'Playfair Display',serif; font-size:48px; font-weight:700; color:var(--gold-light); line-height:1; }
@@ -93,13 +92,11 @@
   .org-player-status { font-size:12px; font-weight:700; }
   .org-player-status.answered { color:var(--green); }
   .org-player-status.thinking { color:rgba(253,246,236,0.4); }
-  /* WINE WAITING */
   .wine-waiting { text-align:center; padding:40px 24px; }
   .wine-waiting .big-emoji { font-size:60px; margin-bottom:16px; animation:bounce 1.5s ease-in-out infinite; }
   @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
   .wine-waiting h3 { font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); margin-bottom:8px; }
   .wine-waiting p { font-size:13px; color:rgba(253,246,236,0.6); line-height:1.6; }
-  /* PODIUM */
   .podium-wrap { padding:10px 0 20px; }
   .podium-stage { display:flex; align-items:flex-end; justify-content:center; gap:8px; margin-bottom:24px; height:160px; }
   .podium-place { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
@@ -168,7 +165,6 @@
 <body>
 <div class="drops" id="drops"></div>
 <canvas id="confettiCanvas"></canvas>
-
 <div class="modal-overlay" id="restartModal">
   <div class="modal-box">
     <h3>🔄 ¿Volver a empezar?</h3>
@@ -179,7 +175,6 @@
     </div>
   </div>
 </div>
-
 <div class="container">
   <div class="header">
     <svg class="wine-glass-svg" viewBox="0 0 80 100" fill="none">
@@ -255,11 +250,17 @@
         <button class="btn btn-ghost" id="orgPrevBtn" onclick="organizerPrev()" disabled>← Vino anterior</button>
         <button class="btn btn-gold" id="orgNextBtn" onclick="organizerNext()">Siguiente vino → (2/6)</button>
       </div>
-      <div class="org-players" id="orgPlayersList"></div>
+      <div class="org-players" id="orgPlayersList">
+        <div class="org-players-header">
+          <div class="org-players-title">Estado participantes</div>
+          <div class="org-players-count" id="orgCount">0/0 han respondido</div>
+        </div>
+        <div id="orgPlayersRows"></div>
+      </div>
     </div>
   </div>
 
-  <!-- TASTING SCREEN (participants) -->
+  <!-- TASTING SCREEN -->
   <div id="tastingScreen" class="screen hidden">
     <div class="progress-bar-wrap">
       <div class="progress-label">
@@ -274,7 +275,7 @@
     </div>
   </div>
 
-  <!-- WINE WAITING (participants waiting for organizer) -->
+  <!-- WINE WAITING -->
   <div id="wineWaitingScreen" class="screen hidden">
     <div class="card">
       <div class="wine-waiting">
@@ -320,7 +321,6 @@
       <button class="btn btn-danger" onclick="openModal('restartModal')">🔄 Volver a Empezar</button>
     </div>
   </div>
-
 </div>
 <div class="toast" id="toast"></div>
 
@@ -361,6 +361,8 @@ const doPorVino = {
 
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
+// Local cache of players for organizer panel
+let cachedPlayers = {};
 
 async function initFirebase() {
   try {
@@ -390,10 +392,7 @@ window.createRoom = async function() {
   participantName = name; myPlayerId = genId(); isOrganizer = true; roomCode = genCode();
   if (firebaseReady) {
     const { ref, set } = window._fb;
-    await set(ref(db, `rooms/${roomCode}`), {
-      status:'waiting', organizer:myPlayerId, currentWineIndex:0,
-      players:{}
-    });
+    await set(ref(db, `rooms/${roomCode}`), { status:'waiting', organizer:myPlayerId, currentWineIndex:0, players:{} });
     listenToRoom();
   }
   showWaitingRoom();
@@ -409,6 +408,7 @@ window.joinRoom = async function() {
     const { ref, get, set } = window._fb;
     const snap = await get(ref(db, `rooms/${roomCode}`));
     if (!snap.exists()) { showToast('Sala no encontrada ❌'); return; }
+    // currentWineAnswered uses -1 as "not answered"
     await set(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
       name, score:0, completed:0, finished:false, currentWineAnswered:-1
     });
@@ -421,11 +421,12 @@ function listenToRoom() {
   if (!firebaseReady) return;
   const { ref, onValue } = window._fb;
 
+  // Listen to ALL player changes — this is what drives the organizer panel
   onValue(ref(db, `rooms/${roomCode}/players`), snap => {
-    const players = snap.val() || {};
-    updateWaitingList(players);
-    updateOrganizerPanel(players);
-    checkAllFinished(players);
+    cachedPlayers = snap.val() || {};
+    updateWaitingList(cachedPlayers);
+    if (isOrganizer) renderOrganizerRows(cachedPlayers);
+    checkAllFinished(cachedPlayers);
   });
 
   onValue(ref(db, `rooms/${roomCode}/status`), snap => {
@@ -443,15 +444,34 @@ function listenToRoom() {
       const waiting = document.getElementById('wineWaitingScreen');
       if (!tasting.classList.contains('hidden') || !waiting.classList.contains('hidden')) {
         currentWine = idx;
-        waiting.classList.add('hidden');
-        tasting.classList.remove('hidden');
-        // Reset local selection for new wine
         selectedOption = null;
         selectedRating = null;
+        waiting.classList.add('hidden');
+        tasting.classList.remove('hidden');
         renderWine();
       }
     }
   });
+}
+
+function renderOrganizerRows(players) {
+  const all = Object.values(players);
+  const answeredCount = all.filter(p => Number(p.currentWineAnswered) === currentWine).length;
+  const countEl = document.getElementById('orgCount');
+  const rowsEl = document.getElementById('orgPlayersRows');
+  if (countEl) countEl.textContent = `${answeredCount}/${all.length} han respondido`;
+  if (rowsEl) {
+    rowsEl.innerHTML = all.map(p => {
+      const hasAnswered = Number(p.currentWineAnswered) === currentWine;
+      return `<div class="org-player-row">
+        <div class="org-status-dot ${hasAnswered ? 'answered' : 'thinking'}"></div>
+        <div class="org-player-name">${p.name}</div>
+        <div class="org-player-status ${hasAnswered ? 'answered' : 'thinking'}">
+          ${hasAnswered ? '✅ Respondido' : '⏳ Pensando...'}
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 function updateWaitingList(players) {
@@ -468,41 +488,16 @@ function updateWaitingList(players) {
   }
 }
 
-function updateOrganizerPanel(players) {
-  const list = document.getElementById('orgPlayersList');
-  if (!list) return;
-  const all = Object.values(players);
-  const answeredCount = all.filter(p => p.currentWineAnswered === currentWine).length;
-  list.innerHTML = `
-    <div class="org-players-header">
-      <div class="org-players-title">Estado participantes</div>
-      <div class="org-players-count">${answeredCount}/${all.length} han respondido</div>
-    </div>
-    ${all.map(p => {
-      const hasAnswered = p.currentWineAnswered === currentWine;
-      return `<div class="org-player-row">
-        <div class="org-status-dot ${hasAnswered ? 'answered' : 'thinking'}"></div>
-        <div class="org-player-name">${p.name}</div>
-        <div class="org-player-status ${hasAnswered ? 'answered' : 'thinking'}">
-          ${hasAnswered ? '✅ Respondido' : '⏳ Pensando...'}
-        </div>
-      </div>`;
-    }).join('')}
-  `;
-}
-
 function checkAllFinished(players) {
   const all = Object.values(players);
   if (all.length === 0) return;
-  if (all.every(p => p.finished === true)) {
-    if (firebaseReady && isOrganizer) {
-      const { ref, update } = window._fb;
-      update(ref(db, `rooms/${roomCode}`), { status:'podium' });
-    }
+  if (all.every(p => p.finished === true) && isOrganizer && firebaseReady) {
+    const { ref, update } = window._fb;
+    update(ref(db, `rooms/${roomCode}`), { status:'podium' });
   }
 }
 
-// ── Reset answered flags for ALL players when organizer changes wine ──
+// Reset currentWineAnswered to -1 for ALL players when organizer changes wine
 async function resetAllAnsweredFlags() {
   if (!firebaseReady) return;
   const { ref, get, update } = window._fb;
@@ -512,7 +507,7 @@ async function resetAllAnsweredFlags() {
   Object.keys(players).forEach(pid => {
     updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1;
   });
-  await update(ref(db), updates);
+  if (Object.keys(updates).length > 0) await update(ref(db), updates);
 }
 
 function showWaitingRoom() {
@@ -523,7 +518,6 @@ function showWaitingRoom() {
     document.getElementById('startCataBtn').style.display = 'block';
     document.getElementById('waitingMsg').style.display = 'none';
   }
-  if (!firebaseReady) updateWaitingList({});
 }
 
 window.startCata = function() {
@@ -545,13 +539,14 @@ function beginTasting(idx) {
   renderWine();
 }
 
-// ── Organizer navigation ──
 function updateOrganizerButtons() {
   document.getElementById('orgWineNum').textContent = currentWine + 1;
   document.getElementById('orgPrevBtn').disabled = currentWine === 0;
   document.getElementById('orgNextBtn').textContent = currentWine >= wines.length - 1
     ? '🏁 Finalizar Cata'
     : `Siguiente vino → (${currentWine+2}/${wines.length})`;
+  // Re-render rows with updated currentWine
+  renderOrganizerRows(cachedPlayers);
 }
 
 window.organizerNext = async function() {
@@ -559,9 +554,7 @@ window.organizerNext = async function() {
     if (firebaseReady) {
       const { ref, update } = window._fb;
       update(ref(db, `rooms/${roomCode}`), { status:'podium' });
-    } else {
-      showPodium();
-    }
+    } else { showPodium(); }
     return;
   }
   await resetAllAnsweredFlags();
@@ -584,7 +577,6 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
-// ── Render wine card ──
 window.toggleGuide = function() {
   document.getElementById('guideToggleBtn').classList.toggle('open');
   document.getElementById('guidePanel').classList.toggle('open');
@@ -644,7 +636,7 @@ function renderWine() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── selectOption: only update local state, NOT Firebase yet ──
+// selectOption: ONLY local state, no Firebase write here
 window.selectOption = function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
@@ -659,7 +651,7 @@ window.selectRating = function(el, n) {
 };
 
 function saveAnswer() {
-  const isCorrect = selectedOption && selectedOption===wines[currentWine].correctAnswer;
+  const isCorrect = selectedOption && selectedOption === wines[currentWine].correctAnswer;
   answers[currentWine] = {
     wineId:wines[currentWine].id, wineName:wines[currentWine].name,
     correctAnswer:wines[currentWine].correctAnswer,
@@ -667,33 +659,30 @@ function saveAnswer() {
   };
 }
 
-async function pushScore(finished) {
-  if (!firebaseReady) return;
-  const score = answers.filter(a=>a.correct).length;
-  const completed = answers.filter(a=>a.guess).length;
-  const { ref, update } = window._fb;
-  const data = { score, completed };
-  if (finished) data.finished = true;
-  await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), data);
-}
-
+// nextWine: write currentWineAnswered = currentWine HERE, then push score
 window.nextWine = async function() {
   saveAnswer();
   const isLast = currentWine >= wines.length - 1;
-  // Mark as answered FIRST so organizer sees it immediately
+  const wineAnsweredNow = currentWine; // capture before any async changes
+
   if (firebaseReady) {
     const { ref, update } = window._fb;
-    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
-      currentWineAnswered: currentWine
-    });
+    const score = answers.filter(a=>a.correct).length;
+    const completed = answers.filter(a=>a.guess).length;
+    const data = {
+      score,
+      completed,
+      currentWineAnswered: wineAnsweredNow  // ← key write: marks this player as answered
+    };
+    if (isLast) data.finished = true;
+    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), data);
   }
-  await pushScore(isLast);
+
   document.getElementById('tastingScreen').classList.add('hidden');
   document.getElementById('wineWaitingScreen').classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
-// ── Podium ──
 async function showPodium() {
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen'].forEach(id =>
     document.getElementById(id).classList.add('hidden'));
@@ -775,7 +764,7 @@ window.closeModal = function(id) { document.getElementById(id).classList.remove(
 window.confirmRestart = function() {
   closeModal('restartModal');
   participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
-  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false;
+  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false; cachedPlayers={};
   document.getElementById('participantName').value='';
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen']
     .forEach(id => document.getElementById(id).classList.add('hidden'));
