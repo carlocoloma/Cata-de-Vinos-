@@ -193,11 +193,12 @@
         <input type="text" id="participantName" placeholder="Tu nombre..." autocomplete="off" maxlength="30"/>
       </div>
       <div class="setup-tabs">
-        <button class="tab-btn active" id="tabCreate" onclick="switchTab('create')">🆕 Crear sala</button>
-        <button class="tab-btn" id="tabJoin" onclick="switchTab('join')">🔗 Unirse</button>
+        <button class="tab-btn active" id="tabCreate" onclick="switchTab('create')">👑 Organizar</button>
+        <button class="tab-btn" id="tabJoin" onclick="switchTab('join')">🍷 Participar</button>
       </div>
       <div id="panelCreate">
-        <button class="btn btn-primary" onclick="createRoom()">🍷 Crear sala de cata</button>
+        <p style="font-size:12px; color:rgba(253,246,236,0.55); text-align:center; margin-bottom:14px; line-height:1.6;">Como organizador <strong style="color:var(--gold-light)">no participas</strong> en la cata.<br>Creas la sala y das el inicio.</p>
+        <button class="btn btn-primary" onclick="createRoom()">👑 Crear sala de cata</button>
       </div>
       <div id="panelJoin" class="hidden">
         <div class="input-wrap" style="margin-top:0;">
@@ -580,8 +581,6 @@ function renderWine() {
       <span>📋 Ficha de los 6 vinos</span><span class="arrow">▼</span>
     </button>
     <div class="guide-panel" id="guidePanel"><div class="guide-inner">${guideHTML}</div></div>
-    <div class="aroma-tags">${wine.aromas.map(a=>`<span class="aroma-tag">${a}</span>`).join('')}</div>
-    <div class="gold-divider"><span>🍇</span></div>
     <div class="section-label">🔍 ¿Cuál crees que es?</div>
     <div class="wine-options">${optionsHTML}</div>
     <div class="section-label">⭐ Tu puntuación para este vino</div>
