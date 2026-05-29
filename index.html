@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -48,25 +47,15 @@
   .wine-badge { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--gold-light); flex-shrink:0; }
   .wine-number-text h3 { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
   .wine-number-text span { font-size:11px; color:rgba(253,246,236,0.5); letter-spacing:1px; }
-  .guide-toggle-btn { width:100%; background:rgba(201,168,76,0.1); border:1.5px solid rgba(201,168,76,0.35); border-radius:12px; padding:11px 16px; color:var(--gold-light); font-family:'Lato',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; touch-action:manipulation; -webkit-appearance:none; }
-  .guide-toggle-btn .arrow { transition:transform 0.3s; }
-  .guide-toggle-btn.open .arrow { transform:rotate(180deg); }
-  .guide-panel { max-height:0; overflow:hidden; transition:max-height 0.4s ease; background:rgba(0,0,0,0.2); border-radius:12px; margin-bottom:12px; }
-  .guide-panel.open { max-height:1400px; }
-  .guide-inner { padding:12px; }
-  .guide-item { padding:10px 0; border-bottom:1px solid rgba(201,168,76,0.1); }
-  .guide-item:last-child { border-bottom:none; }
-  .guide-item-header { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
-  .g-name { font-family:'Playfair Display',serif; font-size:13px; color:var(--gold-light); font-weight:700; }
-  .g-do { font-size:10px; color:rgba(253,246,236,0.5); margin-left:auto; }
-  .guide-item p { font-size:11px; color:rgba(253,246,236,0.7); line-height:1.6; margin-bottom:6px; }
-  .guide-aromas { display:flex; flex-wrap:wrap; gap:4px; }
-  .guide-aroma { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.25); border-radius:20px; padding:2px 8px; font-size:10px; color:var(--gold-light); }
+  
   .section-label { font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; font-weight:700; }
   .wine-options { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
   .wine-option { background:rgba(0,0,0,0.25); border:1.5px solid rgba(201,168,76,0.2); border-radius:12px; padding:9px 7px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; color:rgba(253,246,236,0.7); line-height:1.4; touch-action:manipulation; }
   .wine-option:active { border-color:var(--gold); background:rgba(201,168,76,0.1); }
   .wine-option.selected { border-color:var(--gold); background:linear-gradient(135deg,rgba(201,168,76,0.2),rgba(155,35,53,0.2)); color:var(--gold-light); box-shadow:0 0 10px rgba(201,168,76,0.2); }
+  .wine-option.used { border-color:rgba(192,57,75,0.5); background:rgba(192,57,75,0.12); color:rgba(253,246,236,0.4); cursor:not-allowed; position:relative; }
+  .wine-option.used::after { content:'✓'; position:absolute; top:5px; right:7px; font-size:11px; font-weight:700; color:rgba(192,57,75,0.8); }
+  .wine-option.used .opt-name, .wine-option.used .opt-region { text-decoration:line-through; opacity:0.5; }
   .wine-option .opt-emoji { font-size:18px; display:block; margin-bottom:3px; }
   .wine-option .opt-name { font-weight:700; font-size:10px; }
   .wine-option .opt-region { font-size:9px; opacity:0.7; }
@@ -74,20 +63,6 @@
   .rating-btn { flex:1; min-width:26px; max-width:40px; height:36px; border:1.5px solid rgba(201,168,76,0.25); border-radius:8px; background:rgba(0,0,0,0.25); color:rgba(253,246,236,0.6); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; touch-action:manipulation; -webkit-appearance:none; font-family:'Lato',sans-serif; }
   .rating-btn:active { transform:scale(0.92); }
   .rating-btn.selected { background:linear-gradient(135deg,var(--gold),#a07830); color:var(--wine-dark); border-color:var(--gold); box-shadow:0 0 10px rgba(201,168,76,0.3); }
-
-  /* ── MIS SELECCIONES ── */
-  .my-picks-toggle { width:100%; background:rgba(155,35,53,0.12); border:1.5px solid rgba(192,57,75,0.35); border-radius:12px; padding:10px 16px; color:rgba(253,246,236,0.8); font-family:'Lato',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; touch-action:manipulation; -webkit-appearance:none; }
-  .my-picks-toggle .arrow { transition:transform 0.3s; }
-  .my-picks-toggle.open .arrow { transform:rotate(180deg); }
-  .my-picks-panel { max-height:0; overflow:hidden; transition:max-height 0.35s ease; background:rgba(0,0,0,0.18); border-radius:12px; margin-bottom:12px; }
-  .my-picks-panel.open { max-height:600px; }
-  .my-picks-inner { padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
-  .pick-row { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(201,168,76,0.12); }
-  .pick-num { width:22px; height:22px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--gold-light); flex-shrink:0; }
-  .pick-name { flex:1; font-size:11px; color:rgba(253,246,236,0.8); font-weight:700; }
-  .pick-icon { font-size:14px; flex-shrink:0; }
-  .pick-empty { font-size:11px; color:rgba(253,246,236,0.35); font-style:italic; text-align:center; padding:6px 0; }
-
   .org-panel { margin:0 16px 20px; }
   .org-wine-indicator { text-align:center; background:rgba(0,0,0,0.3); border:1px solid var(--gold); border-radius:16px; padding:20px; margin-bottom:16px; }
   .org-wine-num { font-family:'Playfair Display',serif; font-size:48px; font-weight:700; color:var(--gold-light); line-height:1; }
@@ -284,6 +259,9 @@
     <div style="margin:0 16px 12px;">
       <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled>Siguiente →</button>
     </div>
+    <div style="margin:0 16px 20px;" id="prevWineBtnWrap">
+      <button class="btn btn-ghost" id="prevWineBtn" onclick="goToPrevWine()">← Cambiar selección anterior</button>
+    </div>
   </div>
 
   <!-- WINE WAITING -->
@@ -381,7 +359,6 @@ const doPorVino = {
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
 let cachedPlayers = {};
-let podiumShown = false;
 
 async function initFirebase() {
   try {
@@ -438,36 +415,29 @@ window.joinRoom = async function() {
 function listenToRoom() {
   if (!firebaseReady) return;
   const { ref, onValue } = window._fb;
-
   onValue(ref(db, `rooms/${roomCode}/players`), snap => {
     cachedPlayers = snap.val() || {};
     updateWaitingList(cachedPlayers);
     if (isOrganizer) renderOrganizerRows(cachedPlayers);
     checkAllFinished(cachedPlayers);
   });
-
   onValue(ref(db, `rooms/${roomCode}/status`), snap => {
     const status = snap.val();
     if (status === 'started' && !isOrganizer) {
       if (!document.getElementById('waitingScreen').classList.contains('hidden')) beginTasting(0);
     }
-    if (status === 'podium' && !podiumShown) showPodium();
+    if (status === 'podium') showPodium();
   });
-
-  // Listener de vino actual — redirige SIEMPRE al participante al vino indicado
-  // y restaura su respuesta previa si ya había respondido ese vino
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
-    if (!isOrganizer && idx !== null && !podiumShown) {
-      currentWine = idx;
-      // Restaurar selecciones previas si ya respondió este vino
-      const prev = answers[currentWine];
-      selectedOption = prev ? prev.guess : null;
-      selectedRating = prev ? prev.rating : null;
-      // Redirigir siempre al vino indicado, venga de donde venga
-      document.getElementById('wineWaitingScreen').classList.add('hidden');
-      document.getElementById('tastingScreen').classList.remove('hidden');
-      renderWine();
+    if (!isOrganizer && idx !== null) {
+      const tasting = document.getElementById('tastingScreen');
+      const waiting = document.getElementById('wineWaitingScreen');
+      if (!tasting.classList.contains('hidden') || !waiting.classList.contains('hidden')) {
+        currentWine = idx; selectedOption = null; selectedRating = null;
+        waiting.classList.add('hidden'); tasting.classList.remove('hidden');
+        renderWine();
+      }
     }
   });
 }
@@ -505,12 +475,15 @@ function updateWaitingList(players) {
 }
 
 function checkAllFinished(players) {
-  if (podiumShown) return;
   const all = Object.values(players);
   if (all.length === 0) return;
-  if (all.every(p => p.finished === true) && firebaseReady) {
-    const { ref, update } = window._fb;
-    update(ref(db, `rooms/${roomCode}`), { status:'podium' });
+  if (all.every(p => p.finished === true)) {
+    if (firebaseReady) {
+      const { ref, update } = window._fb;
+      update(ref(db, `rooms/${roomCode}`), { status:'podium' });
+    } else {
+      showPodium();
+    }
   }
 }
 
@@ -520,11 +493,7 @@ async function resetAllAnsweredFlags() {
   const snap = await get(ref(db, `rooms/${roomCode}/players`));
   const players = snap.val() || {};
   const updates = {};
-  Object.keys(players).forEach(pid => {
-    updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1;
-    // Al volver atrás también se resetea el flag finished para que no se dispare el podio prematuramente
-    updates[`rooms/${roomCode}/players/${pid}/finished`] = false;
-  });
+  Object.keys(players).forEach(pid => { updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1; });
   if (Object.keys(updates).length > 0) await update(ref(db), updates);
 }
 
@@ -586,136 +555,90 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
-window.toggleGuide = function() {
-  document.getElementById('guideToggleBtn').classList.toggle('open');
-  document.getElementById('guidePanel').classList.toggle('open');
-};
-
-window.togglePicks = function() {
-  document.getElementById('picksToggleBtn').classList.toggle('open');
-  document.getElementById('picksPanel').classList.toggle('open');
-};
-
-window.toggleMyPicks = function() {
-  document.getElementById('myPicksToggleBtn').classList.toggle('open');
-  document.getElementById('myPicksPanel').classList.toggle('open');
-};
-
-function renderMyPicksHTML() {
-  // Solo mostrar si hay al menos una respuesta previa (no la del vino actual)
-  const prevAnswers = answers.filter((a, i) => i < currentWine && a && a.guess);
-  if (prevAnswers.length === 0) return '';
-  const rowsHTML = wines.slice(0, currentWine).map((w, i) => {
-    const a = answers[i];
-    if (!a || !a.guess) return '';
-    // No revelamos si es correcto o no — solo mostramos la selección
-    return `<div class="pick-row">
-      <div class="pick-num">${i + 1}</div>
-      <div class="pick-name">${a.guess}</div>
-      <div class="pick-icon">🍷</div>
-    </div>`;
-  }).join('');
-  return `
-    <button class="my-picks-toggle" id="myPicksToggleBtn" onclick="toggleMyPicks()">
-      <span>🗒️ Mis selecciones anteriores (${prevAnswers.length}/${currentWine})</span>
-      <span class="arrow">▼</span>
-    </button>
-    <div class="my-picks-panel" id="myPicksPanel">
-      <div class="my-picks-inner">${rowsHTML}</div>
-    </div>`;
-}
-
 function renderWine() {
   const wine = wines[currentWine];
-  const pct = Math.round((currentWine/wines.length)*100);
+  const pct = Math.round((currentWine / wines.length) * 100);
   document.getElementById('progressText').textContent = `Vino ${currentWine+1} de ${wines.length}`;
-  document.getElementById('progressPct').textContent = pct+'%';
-  document.getElementById('progressFill').style.width = pct+'%';
-  if (!shuffledOptions[currentWine]) shuffledOptions[currentWine] = [...wineOptions].sort(()=>Math.random()-0.5);
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  if (!shuffledOptions[currentWine]) shuffledOptions[currentWine] = [...wineOptions].sort(() => Math.random() - 0.5);
   const opts = shuffledOptions[currentWine];
   const prev = answers[currentWine];
   selectedOption = prev ? prev.guess : null;
   selectedRating = prev ? prev.rating : null;
-  const guideHTML = wines.map(w => `
-    <div class="guide-item">
-      <div class="guide-item-header"><span>🍷</span><span class="g-name">${w.correctAnswer}</span><span class="g-do">${doPorVino[w.correctAnswer]||''}</span></div>
-      <p>${w.shortDesc}</p>
-      <div class="guide-aromas">${w.aromas.map(a=>`<span class="guide-aroma">${a}</span>`).join('')}</div>
-    </div>`).join('');
+
+  // Vinos ya elegidos en rondas anteriores (no la actual)
+  const usedGuesses = answers
+    .filter((a, i) => a && a.guess && i !== currentWine)
+    .map(a => a.guess);
+
   const optionsHTML = opts.map(w => {
-    const clean = w.name.replace('\n',' ');
-    return `<div class="wine-option${selectedOption===clean?' selected':''}" onclick="selectOption(this,'${clean}')">
+    const clean = w.name.replace('\n', ' ');
+    const isSelected = selectedOption === clean;
+    const isUsed = !isSelected && usedGuesses.includes(clean);
+    const cls = isSelected ? ' selected' : isUsed ? ' used' : '';
+    const clickHandler = isUsed ? '' : `onclick="selectOption(this,'${clean}')"`;
+    return `<div class="wine-option${cls}" ${clickHandler}>
       <span class="opt-emoji">${w.emoji}</span>
-      <span class="opt-name">${w.name.replace('\n','<br>')}</span>
+      <span class="opt-name">${w.name.replace('\n', '<br>')}</span>
       <span class="opt-region">${w.region}</span>
     </div>`;
   }).join('');
-  const ratingHTML = Array.from({length:10},(_,i)=>i+1).map(n =>
-    `<button class="rating-btn${selectedRating===n?' selected':''}" onclick="selectRating(this,${n})">${n}</button>`
-  ).join('');
 
-  // ── Mis selecciones anteriores ──
-  const prevAnswers = answers.filter((a,i) => a && a.guess && i !== currentWine);
-  let picksHTML = '';
-  if (prevAnswers.length > 0) {
-    const rows = prevAnswers.map(a => {
-      const wineIdx = wines.findIndex(w => w.id === a.wineId);
-      const label = `Vino ${wineIdx + 1}`;
-      const ratingStr = a.rating ? ` · ⭐${a.rating}/10` : '';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.08);">
-        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark));border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold-light);flex-shrink:0;font-weight:700;">${wineIdx+1}</div>
-        <div style="flex:1;font-size:11px;color:rgba(253,246,236,0.8);">${a.guess}${ratingStr}</div>
-      </div>`;
-    }).join('');
-    picksHTML = `
-    <button class="guide-toggle-btn" id="picksToggleBtn" onclick="togglePicks()" style="margin-bottom:12px;background:rgba(155,35,53,0.12);border-color:rgba(192,57,75,0.35);color:rgba(253,246,236,0.8);">
-      <span>🗒️ Mis selecciones anteriores (${prevAnswers.length}/${wines.length})</span><span class="arrow">▼</span>
-    </button>
-    <div class="guide-panel" id="picksPanel" style="margin-bottom:12px;">
-      <div class="guide-inner">${rows}</div>
-    </div>`;
-  }
+  const ratingHTML = Array.from({length:10}, (_, i) => i + 1).map(n =>
+    `<button class="rating-btn${selectedRating === n ? ' selected' : ''}" onclick="selectRating(this,${n})">${n}</button>`
+  ).join('');
 
   document.getElementById('wineCard').innerHTML = `
     <div class="wine-number">
-      <div class="wine-badge">${currentWine+1}</div>
-      <div class="wine-number-text"><h3>${wine.name} 🍷</h3><span>LEE · HUELE · PRUEBA · ADIVINA</span></div>
+      <div class="wine-badge">${currentWine + 1}</div>
+      <div class="wine-number-text"><h3>${wine.name} 🍷</h3><span>HUELE · PRUEBA · ADIVINA</span></div>
     </div>
-    <button class="guide-toggle-btn" id="guideToggleBtn" onclick="toggleGuide()">
-      <span>📋 Ficha de los 6 vinos</span><span class="arrow">▼</span>
-    </button>
-    <div class="guide-panel" id="guidePanel"><div class="guide-inner">${guideHTML}</div></div>
-    ${renderMyPicksHTML()}
-    ${picksHTML}
     <div class="section-label">🔍 ¿Cuál crees que es?</div>
     <div class="wine-options">${optionsHTML}</div>
     <div class="section-label">⭐ Tu puntuación para este vino</div>
     <div class="rating-row">${ratingHTML}</div>`;
+
   const nextBtn = document.getElementById('nextBtn');
   nextBtn.disabled = !selectedOption;
-  nextBtn.textContent = currentWine < wines.length-1 ? 'Siguiente →' : '🏁 Terminar';
-  window.scrollTo({top:0,behavior:'smooth'});
+  nextBtn.textContent = currentWine < wines.length - 1 ? 'Siguiente →' : '🏁 Terminar';
+
+  // Mostrar/ocultar botón de volver
+  const prevWrap = document.getElementById('prevWineBtnWrap');
+  if (prevWrap) prevWrap.style.display = currentWine > 0 ? 'block' : 'none';
+
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 window.selectOption = function(el, wineName) {
-  document.querySelectorAll('.wine-option').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('.wine-option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected'); selectedOption = wineName;
   document.getElementById('nextBtn').disabled = false;
 };
 
 window.selectRating = function(el, n) {
-  document.querySelectorAll('.rating-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected'); selectedRating = n;
 };
 
 function saveAnswer() {
   const isCorrect = selectedOption && selectedOption === wines[currentWine].correctAnswer;
   answers[currentWine] = {
-    wineId:wines[currentWine].id, wineName:wines[currentWine].name,
-    correctAnswer:wines[currentWine].correctAnswer,
-    guess:selectedOption, rating:selectedRating, correct:isCorrect
+    wineId: wines[currentWine].id, wineName: wines[currentWine].name,
+    correctAnswer: wines[currentWine].correctAnswer,
+    guess: selectedOption, rating: selectedRating, correct: isCorrect
   };
 }
+
+window.goToPrevWine = function() {
+  if (currentWine <= 0) return;
+  // Guardar respuesta actual si hay algo seleccionado
+  if (selectedOption) saveAnswer();
+  currentWine--;
+  selectedOption = null; selectedRating = null;
+  renderWine();
+};
 
 window.nextWine = async function() {
   saveAnswer();
@@ -723,8 +646,8 @@ window.nextWine = async function() {
   const wineAnsweredNow = currentWine;
   if (firebaseReady) {
     const { ref, update } = window._fb;
-    const score = answers.filter(a=>a.correct).length;
-    const completed = answers.filter(a=>a.guess).length;
+    const score = answers.filter(a => a.correct).length;
+    const completed = answers.filter(a => a.guess).length;
     const updates = {};
     updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
     updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
@@ -737,7 +660,7 @@ window.nextWine = async function() {
   }
   document.getElementById('tastingScreen').classList.add('hidden');
   document.getElementById('wineWaitingScreen').classList.remove('hidden');
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top: 0, behavior: 'smooth'});
 };
 
 function buildPodiumHTML(items) {
@@ -746,11 +669,8 @@ function buildPodiumHTML(items) {
   const groups = [];
   items.forEach(item => {
     const last = groups[groups.length - 1];
-    if (last && last.scoreValue === item.scoreValue) {
-      last.labels.push(item.label);
-    } else {
-      groups.push({ scoreValue: item.scoreValue, scoreLabel: item.scoreLabel, labels: [item.label] });
-    }
+    if (last && last.scoreValue === item.scoreValue) { last.labels.push(item.label); }
+    else { groups.push({ scoreValue: item.scoreValue, scoreLabel: item.scoreLabel, labels: [item.label] }); }
   });
   const top = groups.slice(0, 3);
   const hasTwo = top.length >= 2;
@@ -762,11 +682,10 @@ function buildPodiumHTML(items) {
       const cls = placeClass[place - 1] || '';
       const medal = medals[place - 1] || '🍷';
       const isTie = group.labels.length > 1;
-      const namesHTML = group.labels.map(l => `<div class="podium-pname">${l}</div>`).join('');
       return `<div class="podium-place ${cls}">
         <div class="podium-info">
           <div class="podium-medal">${medal}${isTie ? ' 🤝' : ''}</div>
-          ${namesHTML}
+          ${group.labels.map(l => `<div class="podium-pname">${l}</div>`).join('')}
           <div class="podium-pscore">${group.scoreLabel}</div>
         </div>
         <div class="podium-block">${place}</div>
@@ -791,7 +710,6 @@ function buildRankingHTML(items, highlightLabel, scoreUnit) {
 }
 
 async function showPodium() {
-  podiumShown = true;
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen'].forEach(id =>
     document.getElementById(id).classList.add('hidden'));
   document.getElementById('podiumScreen').classList.remove('hidden');
@@ -802,12 +720,12 @@ async function showPodium() {
     const snap = await get(ref(db, `rooms/${roomCode}/players`));
     players = snap.val() || {};
   } else {
-    const score = answers.filter(a=>a.correct).length;
-    players = { [myPlayerId]: { name:participantName, score, completed:wines.length } };
+    const score = answers.filter(a => a.correct).length;
+    players = { [myPlayerId]: { name: participantName, score, completed: wines.length } };
   }
 
   const sortedPlayers = Object.values(players)
-    .sort((a,b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score)
     .map(p => ({ label: p.name, scoreValue: p.score, scoreLabel: `${p.score}/6` }));
 
   document.getElementById('podiumWrap').innerHTML = buildPodiumHTML(sortedPlayers);
@@ -815,11 +733,11 @@ async function showPodium() {
 
   if (!isOrganizer) {
     document.getElementById('summaryName').textContent = participantName;
-    const score = answers.filter(a=>a.correct).length;
+    const score = answers.filter(a => a.correct).length;
     document.getElementById('scoreNum').textContent = score;
     const msgs = {0:"Sigue practicando... 🍇",1:"¡Algo captaste! 🌱",2:"Buen intento, catador 🍷",3:"¡Mitad del camino! 👏",4:"¡Muy buen paladar! 🌟",5:"¡Casi perfecto! 🏅",6:"¡Nariz y paladar de oro! 🏆"};
-    document.getElementById('scoreMsg').textContent = msgs[score]||'';
-    document.getElementById('summaryList').innerHTML = answers.map((a,i) => {
+    document.getElementById('scoreMsg').textContent = msgs[score] || '';
+    document.getElementById('summaryList').innerHTML = answers.map((a, i) => {
       const correctLine = !a.correct ? `<div class="sum-correct-ans">✔ Correcto: <strong style="color:rgba(46,204,113,0.8)">${a.correctAnswer}</strong></div>` : '';
       const ratingLine = a.rating ? `<div class="sum-rating">⭐ Tu puntuación: ${a.rating}/10</div>` : '';
       return `<div class="summary-item">
@@ -863,18 +781,17 @@ async function showPodium() {
       `<div style="font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 10px;font-weight:700;">Clasificación completa de vinos</div>
       <div class="full-ranking">${buildRankingHTML(sortedWines, '', ' pts')}</div>`;
   }
-
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 window.sendResults = function() {
   if (isOrganizer) { showToast('El organizador no tiene respuestas que enviar 👑'); return; }
   const orgEmail = document.getElementById('organizerEmail').value.trim();
-  if (!orgEmail||!orgEmail.includes('@')) { showToast('Introduce el email del organizador 📧'); return; }
-  const score = answers.filter(a=>a.correct).length;
+  if (!orgEmail || !orgEmail.includes('@')) { showToast('Introduce el email del organizador 📧'); return; }
+  const score = answers.filter(a => a.correct).length;
   const subject = encodeURIComponent(`🍷 Cata a Ciegas — ${participantName} — ${score}/6 puntos`);
   let body = `RESULTADOS DE CATA A CIEGAS\n================================\nCatador: ${participantName}\nSala: ${roomCode}\nFecha: ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}\nPUNTUACIÓN FINAL: ${score}/6\n================================\n\n`;
-  answers.forEach((a,i) => { body += `VINO ${i+1} — ${a.wineName}\nMi respuesta: ${a.guess||'Sin respuesta'}\nRespuesta correcta: ${a.correctAnswer}\nResultado: ${a.correct?'✅ ACIERTO':'❌ FALLO'}\nMi puntuación al vino: ${a.rating?a.rating+'/10':'Sin puntuar'}\n---\n`; });
+  answers.forEach((a, i) => { body += `VINO ${i+1} — ${a.wineName}\nMi respuesta: ${a.guess||'Sin respuesta'}\nRespuesta correcta: ${a.correctAnswer}\nResultado: ${a.correct?'✅ ACIERTO':'❌ FALLO'}\nMi puntuación al vino: ${a.rating?a.rating+'/10':'Sin puntuar'}\n---\n`; });
   body += `\n[Enviado desde la app de Cata a Ciegas]`;
   window.location.href = `mailto:${orgEmail}?subject=${subject}&body=${encodeURIComponent(body)}`;
   showToast('¡Abriendo tu app de correo! 📬');
@@ -885,7 +802,7 @@ window.closeModal = function(id) { document.getElementById(id).classList.remove(
 window.confirmRestart = function() {
   closeModal('restartModal');
   participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
-  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false; cachedPlayers={}; podiumShown=false;
+  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false; cachedPlayers={};
   document.getElementById('participantName').value='';
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen']
     .forEach(id => document.getElementById(id).classList.add('hidden'));
