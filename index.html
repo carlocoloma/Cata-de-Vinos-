@@ -98,24 +98,20 @@
   .wine-waiting h3 { font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); margin-bottom:8px; }
   .wine-waiting p { font-size:13px; color:rgba(253,246,236,0.6); line-height:1.6; }
 
-  /* ── PODIO REDISEÑADO ── */
-  .podium-wrap { padding:10px 0 20px; }
-  .podium-stage { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:24px; }
-  .podium-place { display:flex; flex-direction:column; align-items:center; }
-  /* Bloque de altura variable */
-  .podium-block { width:82px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:var(--cream); }
+  /* ── PODIO ── */
+  .podium-stage { display:flex; align-items:flex-end; justify-content:center; gap:10px; margin-bottom:24px; }
+  .podium-place { display:flex; flex-direction:column; align-items:center; flex:1; }
+  .podium-info { display:flex; flex-direction:column; align-items:center; margin-bottom:8px; width:100%; padding:0 4px; }
+  .podium-medal { font-size:28px; line-height:1; margin-bottom:5px; }
+  .podium-pname { font-size:11px; font-weight:700; color:var(--cream); text-align:center; line-height:1.4; word-break:break-word; width:100%; margin-bottom:1px; }
+  .podium-pscore { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; margin-top:4px; text-align:center; }
+  .podium-block { width:100%; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:var(--cream); min-height:40px; }
+  .place-1 .podium-pscore { color:#FFD700; }
   .place-1 .podium-block { height:90px; background:linear-gradient(180deg,rgba(255,215,0,0.45),rgba(255,215,0,0.15)); border:1px solid rgba(255,215,0,0.5); }
-  .place-2 .podium-block { height:65px; background:linear-gradient(180deg,rgba(192,192,192,0.45),rgba(192,192,192,0.15)); border:1px solid rgba(192,192,192,0.5); }
-  .place-3 .podium-block { height:45px; background:linear-gradient(180deg,rgba(205,127,50,0.45),rgba(205,127,50,0.15)); border:1px solid rgba(205,127,50,0.5); }
-  .place-tie .podium-block { height:90px; background:linear-gradient(180deg,rgba(255,215,0,0.45),rgba(255,215,0,0.15)); border:1px solid rgba(255,215,0,0.5); }
-  /* Info encima del bloque — separada claramente del bloque */
-  .podium-info { display:flex; flex-direction:column; align-items:center; margin-bottom:8px; width:82px; padding:8px 4px 6px; background:rgba(0,0,0,0.25); border:1px solid rgba(201,168,76,0.2); border-radius:10px; }
-  .podium-medal { font-size:22px; line-height:1; margin-bottom:5px; }
-  .podium-pname { font-size:10px; font-weight:700; color:var(--cream); text-align:center; line-height:1.4; word-break:break-word; width:100%; padding:0 2px; }
-  .podium-pscore { font-family:'Playfair Display',serif; font-size:14px; font-weight:700; margin-top:4px; }
-  .place-1 .podium-pscore, .place-tie .podium-pscore { color:#FFD700; }
   .place-2 .podium-pscore { color:#C0C0C0; }
+  .place-2 .podium-block { height:65px; background:linear-gradient(180deg,rgba(192,192,192,0.45),rgba(192,192,192,0.15)); border:1px solid rgba(192,192,192,0.5); }
   .place-3 .podium-pscore { color:#CD7F32; }
+  .place-3 .podium-block { height:45px; background:linear-gradient(180deg,rgba(205,127,50,0.45),rgba(205,127,50,0.15)); border:1px solid rgba(205,127,50,0.5); }
 
   .full-ranking { margin-top:8px; }
   .rank-row { display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(0,0,0,0.2); border:1px solid rgba(201,168,76,0.15); border-radius:12px; margin-bottom:6px; }
@@ -254,7 +250,7 @@
         <button class="btn btn-ghost" id="orgPrevBtn" onclick="organizerPrev()" disabled>← Vino anterior</button>
         <button class="btn btn-gold" id="orgNextBtn" onclick="organizerNext()">Siguiente vino → (2/6)</button>
       </div>
-      <div class="org-players" id="orgPlayersList">
+      <div class="org-players">
         <div class="org-players-header">
           <div class="org-players-title">Estado participantes</div>
           <div class="org-players-count" id="orgCount">0/0 han respondido</div>
@@ -292,18 +288,16 @@
 
   <!-- PODIUM -->
   <div id="podiumScreen" class="screen hidden">
-    <!-- Podio jugadores -->
     <div class="card">
       <div style="text-align:center; margin-bottom:20px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:6px;">Resultado Final</div>
         <h2 style="font-family:'Playfair Display',serif; font-size:24px; color:var(--gold-light);">🏆 Podio de la Cata</h2>
       </div>
-      <div class="podium-wrap" id="podiumWrap"></div>
+      <div id="podiumWrap"></div>
       <div class="gold-divider"><span>🍇</span></div>
       <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; font-weight:700;">Clasificación completa</div>
       <div class="full-ranking" id="fullRanking"></div>
     </div>
-    <!-- Resumen personal -->
     <div class="card" id="personalSummaryCard">
       <div style="text-align:center; margin-bottom:14px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:4px;">Tu resultado</div>
@@ -319,7 +313,6 @@
       <div class="gold-divider"><span>🍷</span></div>
       <div id="summaryList"></div>
     </div>
-    <!-- Podio mejor vino -->
     <div class="card" id="bestWineCard">
       <div style="text-align:center; margin-bottom:16px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:6px;">Podio de los vinos</div>
@@ -328,7 +321,6 @@
       </div>
       <div id="bestWinePodium"></div>
     </div>
-    <!-- Acciones -->
     <div class="card" style="text-align:center;">
       <div class="input-wrap">
         <input type="email" id="organizerEmail" value="carlocoloma@gmail.com" placeholder="Email del organizador..."/>
@@ -434,14 +426,12 @@ window.joinRoom = async function() {
 function listenToRoom() {
   if (!firebaseReady) return;
   const { ref, onValue } = window._fb;
-
   onValue(ref(db, `rooms/${roomCode}/players`), snap => {
     cachedPlayers = snap.val() || {};
     updateWaitingList(cachedPlayers);
     if (isOrganizer) renderOrganizerRows(cachedPlayers);
     checkAllFinished(cachedPlayers);
   });
-
   onValue(ref(db, `rooms/${roomCode}/status`), snap => {
     const status = snap.val();
     if (status === 'started' && !isOrganizer) {
@@ -449,18 +439,14 @@ function listenToRoom() {
     }
     if (status === 'podium') showPodium();
   });
-
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
     if (!isOrganizer && idx !== null) {
       const tasting = document.getElementById('tastingScreen');
       const waiting = document.getElementById('wineWaitingScreen');
       if (!tasting.classList.contains('hidden') || !waiting.classList.contains('hidden')) {
-        currentWine = idx;
-        selectedOption = null;
-        selectedRating = null;
-        waiting.classList.add('hidden');
-        tasting.classList.remove('hidden');
+        currentWine = idx; selectedOption = null; selectedRating = null;
+        waiting.classList.add('hidden'); tasting.classList.remove('hidden');
         renderWine();
       }
     }
@@ -479,9 +465,7 @@ function renderOrganizerRows(players) {
       return `<div class="org-player-row">
         <div class="org-status-dot ${hasAnswered?'answered':'thinking'}"></div>
         <div class="org-player-name">${p.name}</div>
-        <div class="org-player-status ${hasAnswered?'answered':'thinking'}">
-          ${hasAnswered?'✅ Respondido':'⏳ Pensando...'}
-        </div>
+        <div class="org-player-status ${hasAnswered?'answered':'thinking'}">${hasAnswered?'✅ Respondido':'⏳ Pensando...'}</div>
       </div>`;
     }).join('');
   }
@@ -516,9 +500,7 @@ async function resetAllAnsweredFlags() {
   const snap = await get(ref(db, `rooms/${roomCode}/players`));
   const players = snap.val() || {};
   const updates = {};
-  Object.keys(players).forEach(pid => {
-    updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1;
-  });
+  Object.keys(players).forEach(pid => { updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1; });
   if (Object.keys(updates).length > 0) await update(ref(db), updates);
 }
 
@@ -562,18 +544,13 @@ function updateOrganizerButtons() {
 
 window.organizerNext = async function() {
   if (currentWine >= wines.length - 1) {
-    if (firebaseReady) {
-      const { ref, update } = window._fb;
-      update(ref(db, `rooms/${roomCode}`), { status:'podium' });
-    } else { showPodium(); }
+    if (firebaseReady) { const { ref, update } = window._fb; update(ref(db, `rooms/${roomCode}`), { status:'podium' }); }
+    else showPodium();
     return;
   }
   await resetAllAnsweredFlags();
   currentWine++;
-  if (firebaseReady) {
-    const { ref, update } = window._fb;
-    update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine });
-  }
+  if (firebaseReady) { const { ref, update } = window._fb; update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine }); }
   updateOrganizerButtons();
 };
 
@@ -581,10 +558,7 @@ window.organizerPrev = async function() {
   if (currentWine <= 0) return;
   await resetAllAnsweredFlags();
   currentWine--;
-  if (firebaseReady) {
-    const { ref, update } = window._fb;
-    update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine });
-  }
+  if (firebaseReady) { const { ref, update } = window._fb; update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine }); }
   updateOrganizerButtons();
 };
 
@@ -599,20 +573,17 @@ function renderWine() {
   document.getElementById('progressText').textContent = `Vino ${currentWine+1} de ${wines.length}`;
   document.getElementById('progressPct').textContent = pct+'%';
   document.getElementById('progressFill').style.width = pct+'%';
-
   if (!shuffledOptions[currentWine]) shuffledOptions[currentWine] = [...wineOptions].sort(()=>Math.random()-0.5);
   const opts = shuffledOptions[currentWine];
   const prev = answers[currentWine];
   selectedOption = prev ? prev.guess : null;
   selectedRating = prev ? prev.rating : null;
-
   const guideHTML = wines.map(w => `
     <div class="guide-item">
       <div class="guide-item-header"><span>🍷</span><span class="g-name">${w.correctAnswer}</span><span class="g-do">${doPorVino[w.correctAnswer]||''}</span></div>
       <p>${w.shortDesc}</p>
       <div class="guide-aromas">${w.aromas.map(a=>`<span class="guide-aroma">${a}</span>`).join('')}</div>
     </div>`).join('');
-
   const optionsHTML = opts.map(w => {
     const clean = w.name.replace('\n',' ');
     return `<div class="wine-option${selectedOption===clean?' selected':''}" onclick="selectOption(this,'${clean}')">
@@ -621,11 +592,9 @@ function renderWine() {
       <span class="opt-region">${w.region}</span>
     </div>`;
   }).join('');
-
   const ratingHTML = Array.from({length:10},(_,i)=>i+1).map(n =>
     `<button class="rating-btn${selectedRating===n?' selected':''}" onclick="selectRating(this,${n})">${n}</button>`
   ).join('');
-
   document.getElementById('wineCard').innerHTML = `
     <div class="wine-number">
       <div class="wine-badge">${currentWine+1}</div>
@@ -638,9 +607,7 @@ function renderWine() {
     <div class="section-label">🔍 ¿Cuál crees que es?</div>
     <div class="wine-options">${optionsHTML}</div>
     <div class="section-label">⭐ Tu puntuación para este vino</div>
-    <div class="rating-row">${ratingHTML}</div>
-  `;
-
+    <div class="rating-row">${ratingHTML}</div>`;
   const nextBtn = document.getElementById('nextBtn');
   nextBtn.disabled = !selectedOption;
   nextBtn.textContent = currentWine < wines.length-1 ? 'Siguiente →' : '🏁 Terminar';
@@ -649,15 +616,13 @@ function renderWine() {
 
 window.selectOption = function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o=>o.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedOption = wineName;
+  el.classList.add('selected'); selectedOption = wineName;
   document.getElementById('nextBtn').disabled = false;
 };
 
 window.selectRating = function(el, n) {
   document.querySelectorAll('.rating-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedRating = n;
+  el.classList.add('selected'); selectedRating = n;
 };
 
 function saveAnswer() {
@@ -673,12 +638,10 @@ window.nextWine = async function() {
   saveAnswer();
   const isLast = currentWine >= wines.length - 1;
   const wineAnsweredNow = currentWine;
-
   if (firebaseReady) {
     const { ref, update } = window._fb;
     const score = answers.filter(a=>a.correct).length;
     const completed = answers.filter(a=>a.guess).length;
-    // Build one atomic update with player data + wine rating
     const updates = {};
     updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
     updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
@@ -689,67 +652,74 @@ window.nextWine = async function() {
     }
     await update(ref(db), updates);
   }
-
   document.getElementById('tastingScreen').classList.add('hidden');
   document.getElementById('wineWaitingScreen').classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
-// ── Helper: build podium stage HTML (shared by players & wines podium) ──
-// ── Helper: assign ranks respecting ties ──
-function assignRanks(items) {
-  return items.map((item, i, arr) => {
-    const rank = arr.findIndex(x => x.scoreValue === item.scoreValue) + 1;
-    return { ...item, rank };
-  });
-}
-
+// ── PODIO HELPER ──────────────────────────────────────────────────────────
+// items: [{ label, scoreValue, scoreLabel }] sorted descending by scoreValue
+// Agrupa los que tienen el mismo scoreValue bajo la misma medalla y bloque
 function buildPodiumHTML(items) {
-  // items: array of { label, scoreLabel, scoreValue }
-  // Assign ranks respecting ties: same scoreValue → same rank
-  const ranked = items.map((item, i) => {
-    const rank = items.filter(x => x.scoreValue > item.scoreValue).length + 1;
-    return { ...item, rank };
+  const medals = ['🥇','🥈','🥉'];
+  const placeClass = ['place-1','place-2','place-3'];
+
+  // 1. Agrupar por scoreValue (ya vienen ordenados desc)
+  const groups = [];
+  items.forEach(item => {
+    const last = groups[groups.length - 1];
+    if (last && last.scoreValue === item.scoreValue) {
+      last.labels.push(item.label);
+    } else {
+      groups.push({ scoreValue: item.scoreValue, scoreLabel: item.scoreLabel, labels: [item.label] });
+    }
   });
 
-  // Only show top 3 unique ranks on the podium stage
-  const podiumItems = ranked.filter(x => x.rank <= 3);
+  // 2. Solo los 3 primeros grupos en el podio
+  const top = groups.slice(0, 3);
 
-  // Group by rank for tie detection
-  const byRank = {};
-  podiumItems.forEach(x => { (byRank[x.rank] = byRank[x.rank]||[]).push(x); });
+  // 3. Orden visual: 2º izquierda · 1º centro · 3º derecha
+  const hasTwo = top.length >= 2;
+  const visualOrder = hasTwo ? [top[1], top[0], top[2]].filter(Boolean) : [top[0]];
+  const visualPlaces = hasTwo ? [2, 1, 3] : [1];
 
-  const medalMap = { 1:'🥇', 2:'🥈', 3:'🥉' };
-  const colorMap = { 1:'#FFD700', 2:'#C0C0C0', 3:'#CD7F32' };
-  const heightMap = { 1:90, 2:65, 3:45 };
-
-  // Build display order: rank2 left, rank1 center, rank3 right
-  // For ties at rank1, all tied items go center at same height
-  const displayOrder = [];
-  if (byRank[2]) byRank[2].forEach(x => displayOrder.push({ ...x, side:'left' }));
-  if (byRank[1]) byRank[1].forEach(x => displayOrder.push({ ...x, side:'center' }));
-  if (byRank[3]) byRank[3].forEach(x => displayOrder.push({ ...x, side:'right' }));
-
-  const isTied = (rank) => byRank[rank] && byRank[rank].length > 1;
-
-  return `<div class="podium-stage" style="flex-wrap:wrap; gap:8px;">
-    ${displayOrder.map(item => {
-      const h = heightMap[item.rank] || 45;
-      const color = colorMap[item.rank] || 'var(--gold)';
-      const medal = medalMap[item.rank] || '🍷';
-      const borderColor = item.rank===1 ? 'rgba(255,215,0,0.5)' : item.rank===2 ? 'rgba(192,192,192,0.5)' : 'rgba(205,127,50,0.5)';
-      const bgColor = item.rank===1 ? 'rgba(255,215,0,0.3),rgba(255,215,0,0.1)' : item.rank===2 ? 'rgba(192,192,192,0.3),rgba(192,192,192,0.1)' : 'rgba(205,127,50,0.3),rgba(205,127,50,0.1)';
-      const tieLabel = isTied(item.rank) ? ' 🤝' : '';
-      return `<div class="podium-place" style="align-items:center;">
+  return `<div class="podium-stage">
+    ${visualOrder.map((group, i) => {
+      const place = visualPlaces[i];
+      const cls = placeClass[place - 1] || '';
+      const medal = medals[place - 1] || '🍷';
+      const isTie = group.labels.length > 1;
+      const namesHTML = group.labels.map(l =>
+        `<div class="podium-pname">${l}</div>`
+      ).join('');
+      return `<div class="podium-place ${cls}">
         <div class="podium-info">
-          <div class="podium-medal">${medal}${tieLabel}</div>
-          <div class="podium-pname">${item.label}</div>
-          <div class="podium-pscore" style="color:${color};">${item.scoreLabel}</div>
+          <div class="podium-medal">${medal}${isTie ? ' 🤝' : ''}</div>
+          ${namesHTML}
+          <div class="podium-pscore">${group.scoreLabel}</div>
         </div>
-        <div class="podium-block" style="height:${h}px; border:1px solid ${borderColor}; background:linear-gradient(180deg,${bgColor}); width:82px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--cream);">${item.rank}</div>
+        <div class="podium-block">${place}</div>
       </div>`;
     }).join('')}
   </div>`;
+}
+
+// ── RANKING HELPER ────────────────────────────────────────────────────────
+// Genera filas de ranking respetando empates (misma medalla para mismo score)
+function buildRankingHTML(items, highlightLabel, scoreUnit) {
+  const medals = ['🥇','🥈','🥉'];
+  // Calcular rango real para cada item
+  return items.map((item, i) => {
+    const rank = items.filter(x => x.scoreValue > item.scoreValue).length;
+    const medal = medals[rank] || (rank + 1);
+    const color = rank===0?'#FFD700':rank===1?'#C0C0C0':rank===2?'#CD7F32':'var(--gold)';
+    const isMe = item.label === highlightLabel;
+    return `<div class="rank-row${isMe?' me':''}">
+      <div class="rank-pos" style="color:${color}">${medal}</div>
+      <div class="rank-name">${item.label}${isMe?' (tú)':''}</div>
+      <div class="rank-score">${item.scoreValue}<span style="font-size:12px;color:rgba(253,246,236,0.5);">${scoreUnit}</span></div>
+    </div>`;
+  }).join('');
 }
 
 async function showPodium() {
@@ -768,19 +738,12 @@ async function showPodium() {
     players = { [myPlayerId]: { name:participantName, score, completed:wines.length } };
   }
 
-  const sorted = Object.values(players).sort((a,b)=>b.score-a.score);
+  const sortedPlayers = Object.values(players)
+    .sort((a,b) => b.score - a.score)
+    .map(p => ({ label: p.name, scoreValue: p.score, scoreLabel: `${p.score}/6` }));
 
-  document.getElementById('podiumWrap').innerHTML = buildPodiumHTML(
-    sorted.map(p => ({ label: p.name, scoreLabel: `${p.score}/6`, scoreValue: p.score }))
-  );
-
-  const rankMedals = ['🥇','🥈','🥉'];
-  document.getElementById('fullRanking').innerHTML = sorted.map((p,i) => `
-    <div class="rank-row${p.name===participantName?' me':''}">
-      <div class="rank-pos" style="color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--gold)'}">${rankMedals[i]||i+1}</div>
-      <div class="rank-name">${p.name}${p.name===participantName?' (tú)':''}</div>
-      <div class="rank-score">${p.score}<span style="font-size:12px;color:rgba(253,246,236,0.5);">/6</span></div>
-    </div>`).join('');
+  document.getElementById('podiumWrap').innerHTML = buildPodiumHTML(sortedPlayers);
+  document.getElementById('fullRanking').innerHTML = buildRankingHTML(sortedPlayers, participantName, '/6');
 
   // ── Resumen personal ──
   if (!isOrganizer) {
@@ -805,7 +768,7 @@ async function showPodium() {
   }
 
   // ── Podio mejor vino ──
-  let wineTotals = wines.map((w, i) => ({ name: w.correctAnswer, index: i, total: 0 }));
+  let wineTotals = wines.map((w, i) => ({ label: w.correctAnswer, index: i, scoreValue: 0 }));
 
   try {
     if (firebaseReady) {
@@ -816,36 +779,24 @@ async function showPodium() {
         const wineKey = `wine_${i}`;
         if (ratData[wineKey]) {
           const vals = Object.values(ratData[wineKey]).map(Number).filter(n => !isNaN(n));
-          wineTotals[i].total = vals.reduce((s, v) => s + v, 0);
+          wineTotals[i].scoreValue = vals.reduce((s, v) => s + v, 0);
         }
       });
     } else {
-      answers.forEach((a, i) => {
-        if (a && a.rating) wineTotals[i].total = a.rating;
-      });
+      answers.forEach((a, i) => { if (a && a.rating) wineTotals[i].scoreValue = a.rating; });
     }
   } catch(e) { console.warn('Error leyendo wineRatings:', e); }
 
-  const sortedWines = [...wineTotals].sort((a, b) => b.total - a.total);
-  const wMedals = ['🥇','🥈','🥉'];
+  const sortedWines = [...wineTotals]
+    .sort((a, b) => b.scoreValue - a.scoreValue)
+    .map(w => ({ ...w, scoreLabel: `${w.scoreValue} pts` }));
 
   const bestWineEl = document.getElementById('bestWinePodium');
   if (bestWineEl) {
     bestWineEl.innerHTML =
-      buildPodiumHTML(sortedWines.map(w => ({ label: w.name, scoreLabel: `${w.total} pts`, scoreValue: w.total }))) +
+      buildPodiumHTML(sortedWines) +
       `<div style="font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 10px;font-weight:700;">Clasificación completa de vinos</div>
-      <div class="full-ranking">
-        ${sortedWines.map((w, i) => {
-          const rank = sortedWines.filter(x => x.total > w.total).length + 1;
-          const medal = wMedals[rank-1] || rank;
-          const color = rank===1?'#FFD700':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--gold)';
-          return `<div class="rank-row">
-            <div class="rank-pos" style="color:${color}">${medal}</div>
-            <div class="rank-name" style="font-size:12px;">${w.name}</div>
-            <div class="rank-score" style="font-size:18px;">${w.total}<span style="font-size:11px;color:rgba(253,246,236,0.5);"> pts</span></div>
-          </div>`;
-        }).join('')}
-      </div>`;
+      <div class="full-ranking">${buildRankingHTML(sortedWines, '', ' pts')}</div>`;
   }
 
   window.scrollTo({top:0,behavior:'smooth'});
