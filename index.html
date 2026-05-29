@@ -267,6 +267,30 @@
     </div>
   </div>
 
+  <!-- WINE WAITING (participante espera al organizador entre vinos) -->
+  <div id="wineWaitingScreen" class="screen hidden">
+    <div class="card" style="text-align:center; padding:40px 24px;">
+      <div style="font-size:52px; margin-bottom:16px;">🍷</div>
+      <h2 style="font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); margin-bottom:10px;">Respuesta guardada ✅</h2>
+      <p style="font-size:13px; color:rgba(253,246,236,0.6); line-height:1.7; margin-bottom:20px;">Esperando a que el organizador<br>pase al siguiente vino...</p>
+      <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.3); border-radius:20px; padding:6px 16px;">
+        <span class="live-dot"></span>
+        <span style="font-size:12px; font-weight:700; color:rgba(253,246,236,0.7); letter-spacing:1px;">EN ESPERA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORGANIZER CONTROL PANEL (durante la cata) -->
+  <div id="organizerPanel" class="screen hidden">
+    <div class="card" style="text-align:center;">
+      <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:8px;">Panel del Organizador 👑</div>
+      <div style="font-family:'Playfair Display',serif; font-size:22px; color:var(--gold-light); margin-bottom:6px;" id="orgWineLabel">Vino 1 de 6</div>
+      <p style="font-size:12px; color:rgba(253,246,236,0.5); margin-bottom:20px;">Cuando todos hayan probado el vino, pasa al siguiente.</p>
+      <div class="ranking-list" id="orgRanking" style="margin-bottom:20px;"></div>
+      <button class="btn btn-gold" id="orgNextBtn" onclick="organizerNext()">Siguiente vino →</button>
+    </div>
+  </div>
+
   <!-- WAITING FOR OTHERS -->
   <div id="waitingOthersScreen" class="screen hidden">
     <div class="card" style="text-align:center;">
@@ -476,6 +500,24 @@ function listenToRoom() {
       beginTasting();
     }
   });
+  // Participants listen for wine index changes from organizer
+  if (!isOrganizer) {
+    onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
+      const idx = snap.val();
+      if (idx === null || idx === undefined) return;
+      const tasting = document.getElementById('tastingScreen');
+      const waiting = document.getElementById('wineWaitingScreen');
+      if (idx > currentWine) {
+        // Organizer advanced — move participant forward
+        currentWine = idx;
+        if (waiting && !waiting.classList.contains('hidden')) {
+          waiting.classList.add('hidden');
+          tasting.classList.remove('hidden');
+        }
+        renderWine();
+      }
+    });
+  }
 }
 
 function updateWaitingList(players) {
@@ -542,9 +584,15 @@ function showWaitingRoom() {
 window.startCata = function() {
   if (firebaseReady) {
     const { ref, update } = window._fb;
-    update(ref(db, `rooms/${roomCode}`), { status:'started' });
+    update(ref(db, `rooms/${roomCode}`), { status:'started', currentWineIndex:0 });
   }
-  beginTasting();
+  if (isOrganizer) {
+    // Organizer goes to control panel, not tasting screen
+    document.getElementById('waitingScreen').classList.add('hidden');
+    showOrganizerPanel();
+  } else {
+    beginTasting();
+  }
 };
 
 function beginTasting() {
@@ -649,11 +697,22 @@ async function pushScore() {
 }
 
 window.nextWine = async function() {
-  saveAnswer(); await pushScore(); currentWine++;
+  saveAnswer(); await pushScore();
+  if (firebaseReady && !isOrganizer) {
+    // Participant: go to waiting screen, organizer controls the pace
+    const nextIdx = currentWine + 1;
+    if (nextIdx < wines.length) {
+      document.getElementById('tastingScreen').classList.add('hidden');
+      document.getElementById('wineWaitingScreen').classList.remove('hidden');
+      window.scrollTo({top:0,behavior:'smooth'});
+      return; // stay here until organizer advances
+    }
+  }
+  // Local mode OR last wine
+  currentWine++;
   if (currentWine < wines.length) {
     renderWine();
   } else {
-    // Mark player as finished in Firebase
     if (firebaseReady) {
       const { ref, update } = window._fb;
       const score = answers.filter(a=>a.correct).length;
@@ -666,6 +725,77 @@ window.nextWine = async function() {
 window.goBack = function() {
   saveAnswer();
   if (currentWine > 0) { currentWine--; renderWine(); showToast('← Volviendo al vino anterior'); }
+};
+
+// ══════════════════════════════════════════════════════
+//  ORGANIZER PANEL (during tasting)
+// ══════════════════════════════════════════════════════
+function showOrganizerPanel() {
+  document.getElementById('waitingScreen').classList.add('hidden');
+  document.getElementById('organizerPanel').classList.remove('hidden');
+  updateOrganizerPanel(0);
+  // Listen to players for live ranking
+  if (firebaseReady) {
+    const { ref, onValue } = window._fb;
+    onValue(ref(db, `rooms/${roomCode}/players`), snap => {
+      const players = snap.val() || {};
+      const sorted = Object.values(players).filter(p => !p.isOrganizer).sort((a,b) => b.score-a.score);
+      const medals = ['🥇','🥈','🥉'];
+      document.getElementById('orgRanking').innerHTML = sorted.map((p,i) => `
+        <div class="ranking-item">
+          <div class="rank-pos">${medals[i]||i+1}</div>
+          <div class="rank-info">
+            <div class="rank-name">${p.name}</div>
+            <div class="rank-progress">${p.completed||0}/6 vinos</div>
+          </div>
+          <div class="rank-score">${p.score}</div>
+        </div>`).join('');
+    });
+    // Also listen to currentWineIndex to keep panel in sync
+    onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
+      const idx = snap.val();
+      if (idx !== null && idx !== undefined) updateOrganizerPanel(idx);
+    });
+  }
+}
+
+function updateOrganizerPanel(idx) {
+  const label = document.getElementById('orgWineLabel');
+  const btn = document.getElementById('orgNextBtn');
+  if (label) label.textContent = `Vino ${idx+1} de ${wines.length}`;
+  if (btn) {
+    if (idx >= wines.length - 1) {
+      btn.textContent = '🏁 Finalizar Cata';
+      btn.onclick = organizerFinish;
+    } else {
+      btn.textContent = `Siguiente vino → (${idx+2}/${wines.length})`;
+      btn.onclick = organizerNext;
+    }
+  }
+}
+
+window.organizerNext = async function() {
+  if (!firebaseReady) return;
+  const { ref, get, update } = window._fb;
+  const snap = await get(ref(db, `rooms/${roomCode}/currentWineIndex`));
+  const current = snap.val() || 0;
+  const next = current + 1;
+  if (next < wines.length) {
+    await update(ref(db, `rooms/${roomCode}`), { currentWineIndex: next });
+    showToast(`🍷 Vino ${next+1} — ¡adelante!`);
+  }
+};
+
+window.organizerFinish = async function() {
+  if (!firebaseReady) return;
+  const { ref, update } = window._fb;
+  await update(ref(db, `rooms/${roomCode}`), { status: 'finished' });
+  showToast('🏁 ¡Cata finalizada!');
+  // Show podium for organizer
+  const { get } = window._fb;
+  const snap = await get(ref(db, `rooms/${roomCode}/players`));
+  document.getElementById('organizerPanel').classList.add('hidden');
+  showPodium(snap.val());
 };
 
 // ══════════════════════════════════════════════════════
