@@ -36,6 +36,8 @@
   .btn-gold:active { transform:scale(0.98); }
   .btn-ghost { background:transparent; border:1.5px solid rgba(201,168,76,0.4); color:rgba(253,246,236,0.7); font-size:13px; padding:11px; }
   .btn-ghost:active { border-color:var(--gold); background:rgba(201,168,76,0.08); }
+  .btn-back { background:transparent; border:1.5px solid rgba(201,168,76,0.3); color:rgba(253,246,236,0.6); font-size:12px; padding:10px; letter-spacing:1px; }
+  .btn-back:active { border-color:var(--gold); background:rgba(201,168,76,0.08); }
   .btn-danger { background:transparent; border:1.5px solid rgba(231,76,60,0.4); color:rgba(231,76,60,0.8); font-size:13px; padding:11px; }
   .btn-danger:active { border-color:var(--red); background:rgba(231,76,60,0.08); }
   .btn:disabled { opacity:0.4; cursor:not-allowed; }
@@ -47,15 +49,14 @@
   .wine-badge { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--gold-light); flex-shrink:0; }
   .wine-number-text h3 { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
   .wine-number-text span { font-size:11px; color:rgba(253,246,236,0.5); letter-spacing:1px; }
-
   .section-label { font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; font-weight:700; }
   .wine-options { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
-  .wine-option { background:rgba(0,0,0,0.25); border:1.5px solid rgba(201,168,76,0.2); border-radius:12px; padding:9px 7px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; color:rgba(253,246,236,0.7); line-height:1.4; touch-action:manipulation; }
+  .wine-option { background:rgba(0,0,0,0.25); border:1.5px solid rgba(201,168,76,0.2); border-radius:12px; padding:9px 7px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; color:rgba(253,246,236,0.7); line-height:1.4; touch-action:manipulation; position:relative; }
   .wine-option:active { border-color:var(--gold); background:rgba(201,168,76,0.1); }
   .wine-option.selected { border-color:var(--gold); background:linear-gradient(135deg,rgba(201,168,76,0.2),rgba(155,35,53,0.2)); color:var(--gold-light); box-shadow:0 0 10px rgba(201,168,76,0.2); }
-  .wine-option.used { border-color:rgba(192,57,75,0.5); background:rgba(192,57,75,0.12); color:rgba(253,246,236,0.4); cursor:not-allowed; position:relative; }
-  .wine-option.used::after { content:'✓'; position:absolute; top:5px; right:7px; font-size:11px; font-weight:700; color:rgba(192,57,75,0.8); }
-  .wine-option.used .opt-name, .wine-option.used .opt-region { text-decoration:line-through; opacity:0.5; }
+  .wine-option.used { border-color:rgba(231,76,60,0.35); background:rgba(231,76,60,0.07); color:rgba(253,246,236,0.3); cursor:not-allowed; pointer-events:none; }
+  .wine-option.used .opt-name { text-decoration:line-through; }
+  .wine-option.used::after { content:'✓'; position:absolute; top:5px; right:7px; font-size:10px; color:rgba(231,76,60,0.6); font-weight:700; }
   .wine-option .opt-emoji { font-size:18px; display:block; margin-bottom:3px; }
   .wine-option .opt-name { font-weight:700; font-size:10px; }
   .wine-option .opt-region { font-size:9px; opacity:0.7; }
@@ -256,11 +257,9 @@
       <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
     <div class="card" id="wineCard"></div>
-    <div style="margin:0 16px 12px;">
-      <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled>Siguiente →</button>
-    </div>
-    <div style="margin:0 16px 20px;" id="prevWineBtnWrap">
-      <button class="btn btn-ghost" id="prevWineBtn" onclick="goToPrevWine()">← Cambiar selección anterior</button>
+    <div style="margin:0 16px 12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <button class="btn btn-back" id="prevWineBtn" onclick="goToPrevWine()" style="display:none;">← Vino anterior</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled style="grid-column: span 2;">Siguiente →</button>
     </div>
   </div>
 
@@ -359,6 +358,8 @@ const doPorVino = {
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
 let cachedPlayers = {};
+let orgCurrentWine = 0;   // índice actual del organizador, se actualiza por Firebase
+let editingPrev = false;  // true cuando el participante ha retrocedido a editar
 
 async function initFirebase() {
   try {
@@ -430,13 +431,27 @@ function listenToRoom() {
   });
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
-    if (!isOrganizer && idx !== null) {
+    if (idx === null) return;
+    orgCurrentWine = idx; // siempre actualizamos el índice del organizador
+
+    if (!isOrganizer) {
       const tasting = document.getElementById('tastingScreen');
       const waiting = document.getElementById('wineWaitingScreen');
-      if (!tasting.classList.contains('hidden') || !waiting.classList.contains('hidden')) {
-        currentWine = idx; selectedOption = null; selectedRating = null;
-        waiting.classList.add('hidden'); tasting.classList.remove('hidden');
-        renderWine();
+      const isOnTasting = !tasting.classList.contains('hidden');
+      const isOnWaiting = !waiting.classList.contains('hidden');
+
+      if (isOnTasting || isOnWaiting) {
+        // Si el participante está esperando, avanzar al nuevo vino del organizador
+        if (isOnWaiting) {
+          currentWine = idx;
+          selectedOption = null; selectedRating = null;
+          editingPrev = false;
+          waiting.classList.add('hidden');
+          tasting.classList.remove('hidden');
+          renderWine();
+        }
+        // Si está en modo edición de vino anterior y el organizador avanzó, no interrumpir
+        // (el participante volverá al vino correcto al confirmar su selección)
       }
     }
   });
@@ -513,14 +528,15 @@ window.startCata = function() {
     update(ref(db, `rooms/${roomCode}`), { status:'started', currentWineIndex:0 });
   }
   document.getElementById('waitingScreen').classList.add('hidden');
-  currentWine = 0;
+  currentWine = 0; orgCurrentWine = 0;
   document.getElementById('organizerScreen').classList.remove('hidden');
   updateOrganizerButtons();
 };
 
 function beginTasting(idx) {
-  currentWine = idx; answers = []; shuffledOptions = [];
-  selectedOption = null; selectedRating = null;
+  currentWine = idx; orgCurrentWine = idx;
+  answers = []; shuffledOptions = [];
+  selectedOption = null; selectedRating = null; editingPrev = false;
   document.getElementById('waitingScreen').classList.add('hidden');
   document.getElementById('tastingScreen').classList.remove('hidden');
   renderWine();
@@ -555,6 +571,18 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
+// Volver al vino anterior para editar
+window.goToPrevWine = function() {
+  if (currentWine <= 0) return;
+  // Guardar selección actual si existe
+  if (selectedOption) saveAnswer();
+  currentWine--;
+  editingPrev = true;
+  selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
+  selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
+  renderWine();
+};
+
 function renderWine() {
   const wine = wines[currentWine];
   const pct = Math.round((currentWine / wines.length) * 100);
@@ -568,18 +596,19 @@ function renderWine() {
   selectedOption = prev ? prev.guess : null;
   selectedRating = prev ? prev.rating : null;
 
-  // Vinos ya elegidos en rondas anteriores (no la actual)
-  const usedGuesses = answers
+  // Vinos ya usados en otras rondas (no en la actual)
+  const usedWines = answers
     .filter((a, i) => a && a.guess && i !== currentWine)
     .map(a => a.guess);
 
   const optionsHTML = opts.map(w => {
     const clean = w.name.replace('\n', ' ');
+    const isUsed = usedWines.includes(clean);
     const isSelected = selectedOption === clean;
-    const isUsed = !isSelected && usedGuesses.includes(clean);
-    const cls = isSelected ? ' selected' : isUsed ? ' used' : '';
-    const clickHandler = isUsed ? '' : `onclick="selectOption(this,'${clean}')"`;
-    return `<div class="wine-option${cls}" ${clickHandler}>
+    let cls = '';
+    if (isSelected) cls = ' selected';
+    else if (isUsed) cls = ' used';
+    return `<div class="wine-option${cls}" onclick="${isUsed ? '' : `selectOption(this,'${clean}')`}">
       <span class="opt-emoji">${w.emoji}</span>
       <span class="opt-name">${w.name.replace('\n', '<br>')}</span>
       <span class="opt-region">${w.region}</span>
@@ -600,13 +629,20 @@ function renderWine() {
     <div class="section-label">⭐ Tu puntuación para este vino</div>
     <div class="rating-row">${ratingHTML}</div>`;
 
+  // Botón volver atrás
+  const prevBtn = document.getElementById('prevWineBtn');
   const nextBtn = document.getElementById('nextBtn');
+  if (currentWine > 0) {
+    prevBtn.style.display = 'block';
+    nextBtn.style.gridColumn = '';
+  } else {
+    prevBtn.style.display = 'none';
+    nextBtn.style.gridColumn = 'span 2';
+  }
   nextBtn.disabled = !selectedOption;
-  nextBtn.textContent = currentWine < wines.length - 1 ? 'Siguiente →' : '🏁 Terminar';
-
-  // Mostrar/ocultar botón de volver
-  const prevWrap = document.getElementById('prevWineBtnWrap');
-  if (prevWrap) prevWrap.style.display = currentWine > 0 ? 'block' : 'none';
+  nextBtn.textContent = editingPrev
+    ? `✔ Confirmar y volver al Vino ${orgCurrentWine + 1}`
+    : currentWine < wines.length - 1 ? 'Siguiente →' : '🏁 Terminar';
 
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
@@ -614,7 +650,8 @@ function renderWine() {
 window.selectOption = function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected'); selectedOption = wineName;
-  document.getElementById('nextBtn').disabled = false;
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.disabled = false;
 };
 
 window.selectRating = function(el, n) {
@@ -631,59 +668,56 @@ function saveAnswer() {
   };
 }
 
-window.goToPrevWine = function() {
-  if (currentWine <= 0) return;
-  // Guardar respuesta actual si hay algo seleccionado
-  if (selectedOption) saveAnswer();
-  currentWine--;
-  selectedOption = null; selectedRating = null;
-  renderWine();
-};
-
-async function syncAnswerToFirebase(wineIndex, isLast) {
-  if (!firebaseReady) return;
-  const { ref, update } = window._fb;
-  const score = answers.filter(a => a && a.correct).length;
-  const completed = answers.filter(a => a && a.guess).length;
-  const updates = {};
-  updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
-  updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
-  // currentWineAnswered = índice del último vino confirmado, o -1 si se está editando uno anterior
-  updates[`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`] = wineIndex;
-  if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
-  if (answers[wineIndex] && answers[wineIndex].rating) {
-    updates[`rooms/${roomCode}/wineRatings/wine_${wineIndex}/${myPlayerId}`] = answers[wineIndex].rating;
-  }
-  await update(ref(db), updates);
-}
-
 window.nextWine = async function() {
   saveAnswer();
-  const isLast = currentWine >= wines.length - 1;
   const wineAnsweredNow = currentWine;
-  await syncAnswerToFirebase(wineAnsweredNow, isLast);
-  document.getElementById('tastingScreen').classList.add('hidden');
-  document.getElementById('wineWaitingScreen').classList.remove('hidden');
-  window.scrollTo({top: 0, behavior: 'smooth'});
-};
+  const isLast = wineAnsweredNow >= wines.length - 1;
 
-window.goToPrevWine = async function() {
-  if (currentWine <= 0) return;
-  // Guarda respuesta actual si hay algo seleccionado
-  if (selectedOption) saveAnswer();
-  currentWine--;
-  selectedOption = null; selectedRating = null;
-  // Marca al jugador como "editando" — currentWineAnswered retrocede
-  // para que el organizador vea que ya no ha confirmado este vino
   if (firebaseReady) {
     const { ref, update } = window._fb;
-    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
-      currentWineAnswered: currentWine - 1  // uno por detrás del vino que está editando
-    });
+    const score = answers.filter(a => a && a.correct).length;
+    const completed = answers.filter(a => a && a.guess).length;
+    const updates = {};
+    updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
+    updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
+    updates[`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`] = wineAnsweredNow;
+    if (answers[wineAnsweredNow] && answers[wineAnsweredNow].rating) {
+      updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
+    }
+
+    // Si veníamos editando un vino anterior, saltar al vino actual del organizador
+    if (editingPrev && wineAnsweredNow < orgCurrentWine) {
+      editingPrev = false;
+      currentWine = orgCurrentWine;
+      selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
+      selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
+      await update(ref(db), updates);
+      renderWine();
+      return;
+    }
+
+    if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
+    await update(ref(db), updates);
   }
-  document.getElementById('wineWaitingScreen').classList.add('hidden');
-  document.getElementById('tastingScreen').classList.remove('hidden');
-  renderWine();
+
+  editingPrev = false;
+
+  if (isLast) {
+    document.getElementById('tastingScreen').classList.add('hidden');
+    document.getElementById('wineWaitingScreen').classList.remove('hidden');
+  } else {
+    // Avanzar normalmente al siguiente vino
+    currentWine++;
+    selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
+    selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
+    // Si ya respondimos este vino antes (por edición), mostrarlo; si no, esperar al organizador
+    if (currentWine <= orgCurrentWine) {
+      renderWine();
+    } else {
+      document.getElementById('tastingScreen').classList.add('hidden');
+      document.getElementById('wineWaitingScreen').classList.remove('hidden');
+    }
+  }
   window.scrollTo({top: 0, behavior: 'smooth'});
 };
 
@@ -744,7 +778,7 @@ async function showPodium() {
     const snap = await get(ref(db, `rooms/${roomCode}/players`));
     players = snap.val() || {};
   } else {
-    const score = answers.filter(a => a.correct).length;
+    const score = answers.filter(a => a && a.correct).length;
     players = { [myPlayerId]: { name: participantName, score, completed: wines.length } };
   }
 
@@ -757,11 +791,12 @@ async function showPodium() {
 
   if (!isOrganizer) {
     document.getElementById('summaryName').textContent = participantName;
-    const score = answers.filter(a => a.correct).length;
+    const score = answers.filter(a => a && a.correct).length;
     document.getElementById('scoreNum').textContent = score;
     const msgs = {0:"Sigue practicando... 🍇",1:"¡Algo captaste! 🌱",2:"Buen intento, catador 🍷",3:"¡Mitad del camino! 👏",4:"¡Muy buen paladar! 🌟",5:"¡Casi perfecto! 🏅",6:"¡Nariz y paladar de oro! 🏆"};
     document.getElementById('scoreMsg').textContent = msgs[score] || '';
     document.getElementById('summaryList').innerHTML = answers.map((a, i) => {
+      if (!a) return '';
       const correctLine = !a.correct ? `<div class="sum-correct-ans">✔ Correcto: <strong style="color:rgba(46,204,113,0.8)">${a.correctAnswer}</strong></div>` : '';
       const ratingLine = a.rating ? `<div class="sum-rating">⭐ Tu puntuación: ${a.rating}/10</div>` : '';
       return `<div class="summary-item">
@@ -812,10 +847,13 @@ window.sendResults = function() {
   if (isOrganizer) { showToast('El organizador no tiene respuestas que enviar 👑'); return; }
   const orgEmail = document.getElementById('organizerEmail').value.trim();
   if (!orgEmail || !orgEmail.includes('@')) { showToast('Introduce el email del organizador 📧'); return; }
-  const score = answers.filter(a => a.correct).length;
+  const score = answers.filter(a => a && a.correct).length;
   const subject = encodeURIComponent(`🍷 Cata a Ciegas — ${participantName} — ${score}/6 puntos`);
   let body = `RESULTADOS DE CATA A CIEGAS\n================================\nCatador: ${participantName}\nSala: ${roomCode}\nFecha: ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}\nPUNTUACIÓN FINAL: ${score}/6\n================================\n\n`;
-  answers.forEach((a, i) => { body += `VINO ${i+1} — ${a.wineName}\nMi respuesta: ${a.guess||'Sin respuesta'}\nRespuesta correcta: ${a.correctAnswer}\nResultado: ${a.correct?'✅ ACIERTO':'❌ FALLO'}\nMi puntuación al vino: ${a.rating?a.rating+'/10':'Sin puntuar'}\n---\n`; });
+  answers.forEach((a, i) => {
+    if (!a) return;
+    body += `VINO ${i+1} — ${a.wineName}\nMi respuesta: ${a.guess||'Sin respuesta'}\nRespuesta correcta: ${a.correctAnswer}\nResultado: ${a.correct?'✅ ACIERTO':'❌ FALLO'}\nMi puntuación al vino: ${a.rating?a.rating+'/10':'Sin puntuar'}\n---\n`;
+  });
   body += `\n[Enviado desde la app de Cata a Ciegas]`;
   window.location.href = `mailto:${orgEmail}?subject=${subject}&body=${encodeURIComponent(body)}`;
   showToast('¡Abriendo tu app de correo! 📬');
@@ -826,7 +864,8 @@ window.closeModal = function(id) { document.getElementById(id).classList.remove(
 window.confirmRestart = function() {
   closeModal('restartModal');
   participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
-  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false; cachedPlayers={};
+  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false;
+  cachedPlayers={}; orgCurrentWine=0; editingPrev=false;
   document.getElementById('participantName').value='';
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen']
     .forEach(id => document.getElementById(id).classList.add('hidden'));
