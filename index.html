@@ -47,7 +47,7 @@
   .wine-badge { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--gold-light); flex-shrink:0; }
   .wine-number-text h3 { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
   .wine-number-text span { font-size:11px; color:rgba(253,246,236,0.5); letter-spacing:1px; }
-  
+
   .section-label { font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; font-weight:700; }
   .wine-options { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
   .wine-option { background:rgba(0,0,0,0.25); border:1.5px solid rgba(201,168,76,0.2); border-radius:12px; padding:9px 7px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; color:rgba(253,246,236,0.7); line-height:1.4; touch-action:manipulation; }
@@ -640,26 +640,50 @@ window.goToPrevWine = function() {
   renderWine();
 };
 
+async function syncAnswerToFirebase(wineIndex, isLast) {
+  if (!firebaseReady) return;
+  const { ref, update } = window._fb;
+  const score = answers.filter(a => a && a.correct).length;
+  const completed = answers.filter(a => a && a.guess).length;
+  const updates = {};
+  updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
+  updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
+  // currentWineAnswered = índice del último vino confirmado, o -1 si se está editando uno anterior
+  updates[`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`] = wineIndex;
+  if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
+  if (answers[wineIndex] && answers[wineIndex].rating) {
+    updates[`rooms/${roomCode}/wineRatings/wine_${wineIndex}/${myPlayerId}`] = answers[wineIndex].rating;
+  }
+  await update(ref(db), updates);
+}
+
 window.nextWine = async function() {
   saveAnswer();
   const isLast = currentWine >= wines.length - 1;
   const wineAnsweredNow = currentWine;
-  if (firebaseReady) {
-    const { ref, update } = window._fb;
-    const score = answers.filter(a => a.correct).length;
-    const completed = answers.filter(a => a.guess).length;
-    const updates = {};
-    updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
-    updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
-    updates[`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`] = wineAnsweredNow;
-    if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
-    if (answers[wineAnsweredNow] && answers[wineAnsweredNow].rating) {
-      updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
-    }
-    await update(ref(db), updates);
-  }
+  await syncAnswerToFirebase(wineAnsweredNow, isLast);
   document.getElementById('tastingScreen').classList.add('hidden');
   document.getElementById('wineWaitingScreen').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+};
+
+window.goToPrevWine = async function() {
+  if (currentWine <= 0) return;
+  // Guarda respuesta actual si hay algo seleccionado
+  if (selectedOption) saveAnswer();
+  currentWine--;
+  selectedOption = null; selectedRating = null;
+  // Marca al jugador como "editando" — currentWineAnswered retrocede
+  // para que el organizador vea que ya no ha confirmado este vino
+  if (firebaseReady) {
+    const { ref, update } = window._fb;
+    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
+      currentWineAnswered: currentWine - 1  // uno por detrás del vino que está editando
+    });
+  }
+  document.getElementById('wineWaitingScreen').classList.add('hidden');
+  document.getElementById('tastingScreen').classList.remove('hidden');
+  renderWine();
   window.scrollTo({top: 0, behavior: 'smooth'});
 };
 
