@@ -435,19 +435,13 @@ function listenToRoom() {
     const idx = snap.val();
     if (idx === null) return;
     orgCurrentWine = idx;
-
     if (!isOrganizer) {
       const tasting = document.getElementById('tastingScreen');
       const waiting = document.getElementById('wineWaitingScreen');
       const isOnTasting = !tasting.classList.contains('hidden');
       const isOnWaiting = !waiting.classList.contains('hidden');
-
       if (isOnTasting || isOnWaiting) {
-        if (editingPrev) {
-          // Está editando: solo actualizar el texto del botón confirmar
-          renderWine();
-          return;
-        }
+        if (editingPrev) { renderWine(); return; }
         currentWine = idx;
         selectedOption = answers[idx] ? answers[idx].guess : null;
         selectedRating = answers[idx] ? answers[idx].rating : null;
@@ -497,10 +491,8 @@ function checkAllFinished(players) {
   const all = Object.values(players);
   if (all.length === 0) return;
   if (all.every(p => p.finished === true)) {
-    if (firebaseReady) {
-      const { ref, update } = window._fb;
-      update(ref(db, `rooms/${roomCode}`), { status:'podium' });
-    } else showPodium();
+    if (firebaseReady) { const { ref, update } = window._fb; update(ref(db, `rooms/${roomCode}`), { status:'podium' }); }
+    else showPodium();
   }
 }
 
@@ -573,15 +565,13 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
-// Retroceder un paso: libera el vino actual Y el anterior, permitiendo elegir libremente
+// Al pulsar "← Anterior": borra TODAS las respuestas guardadas
+// → los 6 vinos quedan completamente libres para ser seleccionados de nuevo
 window.goToPrevWine = function() {
   if (currentWine <= 0) return;
-  // Liberar respuesta del vino en el que estamos ahora
-  answers[currentWine] = null;
-  // Retroceder
+  // Limpiar todas las respuestas desde el primero hasta el actual inclusive
+  for (let i = 0; i <= currentWine; i++) answers[i] = null;
   currentWine--;
-  // Liberar también la respuesta del vino al que volvemos
-  answers[currentWine] = null;
   editingPrev = true;
   selectedOption = null;
   selectedRating = null;
@@ -598,11 +588,10 @@ function renderWine() {
   if (!shuffledOptions[currentWine]) shuffledOptions[currentWine] = [...wineOptions].sort(() => Math.random() - 0.5);
   const opts = shuffledOptions[currentWine];
 
-  // Restaurar selección guardada para este vino (null si fue liberada)
   selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
   selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
 
-  // Vinos usados = los que tienen respuesta guardada en OTRAS rondas distintas a la actual
+  // Solo bloquear vinos usados en rondas distintas a la actual
   const usedWines = answers
     .filter((a, i) => a && a.guess && i !== currentWine)
     .map(a => a.guess);
@@ -688,8 +677,6 @@ window.nextWine = async function() {
     if (answers[wineAnsweredNow] && answers[wineAnsweredNow].rating) {
       updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
     }
-
-    // Si veníamos editando y el organizador ya está más adelante, saltar a su vino
     if (editingPrev && wineAnsweredNow < orgCurrentWine) {
       editingPrev = false;
       currentWine = orgCurrentWine;
@@ -699,7 +686,6 @@ window.nextWine = async function() {
       renderWine();
       return;
     }
-
     if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
     await update(ref(db), updates);
   }
