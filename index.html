@@ -680,6 +680,13 @@ async function pushScore(finished) {
 window.nextWine = async function() {
   saveAnswer();
   const isLast = currentWine >= wines.length - 1;
+  // Mark as answered FIRST so organizer sees it immediately
+  if (firebaseReady) {
+    const { ref, update } = window._fb;
+    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
+      currentWineAnswered: currentWine
+    });
+  }
   await pushScore(isLast);
   document.getElementById('tastingScreen').classList.add('hidden');
   document.getElementById('wineWaitingScreen').classList.remove('hidden');
