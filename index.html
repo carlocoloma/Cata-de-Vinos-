@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -80,11 +81,18 @@
   .org-wine-label { font-size:12px; color:rgba(253,246,236,0.5); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
   .org-nav { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
   .org-players { background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:16px; padding:16px; }
-  .org-player-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(201,168,76,0.08); }
+  .org-players-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .org-players-title { font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; font-weight:700; }
+  .org-players-count { font-size:12px; color:rgba(253,246,236,0.6); }
+  .org-player-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(201,168,76,0.08); }
   .org-player-row:last-child { border-bottom:none; }
-  .org-player-name { flex:1; font-size:13px; color:var(--cream); }
-  .org-player-status { font-size:11px; color:rgba(253,246,236,0.5); }
-  .org-player-done { color:var(--green); font-weight:700; }
+  .org-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; transition:background 0.3s; }
+  .org-status-dot.answered { background:var(--green); box-shadow:0 0 6px rgba(46,204,113,0.6); }
+  .org-status-dot.thinking { background:rgba(255,255,255,0.2); }
+  .org-player-name { flex:1; font-size:13px; color:var(--cream); font-weight:700; }
+  .org-player-status { font-size:12px; font-weight:700; }
+  .org-player-status.answered { color:var(--green); }
+  .org-player-status.thinking { color:rgba(253,246,236,0.4); }
   /* WINE WAITING */
   .wine-waiting { text-align:center; padding:40px 24px; }
   .wine-waiting .big-emoji { font-size:60px; margin-bottom:16px; animation:bounce 1.5s ease-in-out infinite; }
@@ -114,7 +122,6 @@
   .rank-pos { font-family:'Playfair Display',serif; font-size:16px; font-weight:700; width:24px; text-align:center; flex-shrink:0; }
   .rank-name { flex:1; font-size:13px; font-weight:700; color:var(--cream); }
   .rank-score { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--gold-light); }
-  /* SUMMARY */
   .summary-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(201,168,76,0.1); }
   .summary-item:last-child { border-bottom:none; }
   .sum-badge { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold-light); flex-shrink:0; }
@@ -262,13 +269,12 @@
       <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
     <div class="card" id="wineCard"></div>
-    <!-- Solo botón Siguiente, SIN botón Volver -->
     <div style="margin:0 16px 12px;">
       <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled>Siguiente →</button>
     </div>
   </div>
 
-  <!-- WINE WAITING (participants waiting for organizer to advance) -->
+  <!-- WINE WAITING (participants waiting for organizer) -->
   <div id="wineWaitingScreen" class="screen hidden">
     <div class="card">
       <div class="wine-waiting">
@@ -291,8 +297,6 @@
       <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; font-weight:700;">Clasificación completa</div>
       <div class="full-ranking" id="fullRanking"></div>
     </div>
-
-    <!-- Personal summary -->
     <div class="card" id="personalSummaryCard">
       <div style="text-align:center; margin-bottom:14px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:4px;">Tu resultado</div>
@@ -308,7 +312,6 @@
       <div class="gold-divider"><span>🍷</span></div>
       <div id="summaryList"></div>
     </div>
-
     <div class="card" style="text-align:center;">
       <div class="input-wrap">
         <input type="email" id="organizerEmail" value="carlocoloma@gmail.com" placeholder="Email del organizador..."/>
@@ -318,13 +321,10 @@
     </div>
   </div>
 
-</div><!-- /container -->
+</div>
 <div class="toast" id="toast"></div>
 
 <script type="module">
-// ══════════════════════════════════════════════════════
-//  FIREBASE CONFIG
-// ══════════════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyBQqYRbbjT2oR4yrWDJaAJvwJzKL8N9cjA",
   authDomain: "cata-de-vinos-143a0.firebaseapp.com",
@@ -335,9 +335,6 @@ const firebaseConfig = {
   appId: "1:360985295634:web:c2a923add6a7ecd73311cb"
 };
 
-// ══════════════════════════════════════════════════════
-//  WINE DATA
-// ══════════════════════════════════════════════════════
 const wines = [
   { id:1, name:"Vino 1", correctAnswer:"Marqués de Riscal Crianza", shortDesc:"Clásico riojano de la bodega más antigua de la D.O. Rioja. 12 meses en barrica americana. Elegante, equilibrado y muy reconocible.", aromas:["Cereza","Ciruela","Vainilla","Coco","Pimienta","Clavo"] },
   { id:2, name:"Vino 2", correctAnswer:"Faustino V Crianza", shortDesc:"Icónico vino riojano con botella esmerilada. Crianza en barrica americana y francesa. Suave, frutal y muy accesible.", aromas:["Fresa","Mora","Frambuesa","Vainilla","Tostado","Floral"] },
@@ -362,15 +359,9 @@ const doPorVino = {
   "Protos Crianza":"D.O. Ribera del Duero","Pago de los Capellanes Crianza":"D.O. Ribera del Duero"
 };
 
-// ══════════════════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════════════════
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
 
-// ══════════════════════════════════════════════════════
-//  FIREBASE
-// ══════════════════════════════════════════════════════
 async function initFirebase() {
   try {
     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
@@ -386,9 +377,6 @@ async function initFirebase() {
 function genCode() { return Math.random().toString(36).substring(2,6).toUpperCase(); }
 function genId() { return 'p_'+Date.now()+'_'+Math.random().toString(36).substring(2,6); }
 
-// ══════════════════════════════════════════════════════
-//  SETUP
-// ══════════════════════════════════════════════════════
 window.switchTab = function(tab) {
   document.getElementById('tabCreate').classList.toggle('active', tab==='create');
   document.getElementById('tabJoin').classList.toggle('active', tab==='join');
@@ -421,7 +409,9 @@ window.joinRoom = async function() {
     const { ref, get, set } = window._fb;
     const snap = await get(ref(db, `rooms/${roomCode}`));
     if (!snap.exists()) { showToast('Sala no encontrada ❌'); return; }
-    await set(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), { name, score:0, completed:0, finished:false });
+    await set(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
+      name, score:0, completed:0, finished:false, currentWineAnswered:-1
+    });
     listenToRoom();
   }
   showWaitingRoom();
@@ -431,7 +421,6 @@ function listenToRoom() {
   if (!firebaseReady) return;
   const { ref, onValue } = window._fb;
 
-  // Players list
   onValue(ref(db, `rooms/${roomCode}/players`), snap => {
     const players = snap.val() || {};
     updateWaitingList(players);
@@ -439,17 +428,14 @@ function listenToRoom() {
     checkAllFinished(players);
   });
 
-  // Status changes
   onValue(ref(db, `rooms/${roomCode}/status`), snap => {
     const status = snap.val();
     if (status === 'started' && !isOrganizer) {
-      const ws = document.getElementById('waitingScreen');
-      if (!ws.classList.contains('hidden')) beginTasting(0);
+      if (!document.getElementById('waitingScreen').classList.contains('hidden')) beginTasting(0);
     }
     if (status === 'podium') showPodium();
   });
 
-  // Wine index controlled by organizer
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
     if (!isOrganizer && idx !== null) {
@@ -457,9 +443,11 @@ function listenToRoom() {
       const waiting = document.getElementById('wineWaitingScreen');
       if (!tasting.classList.contains('hidden') || !waiting.classList.contains('hidden')) {
         currentWine = idx;
-        // Show tasting screen for new wine
         waiting.classList.add('hidden');
         tasting.classList.remove('hidden');
+        // Reset local selection for new wine
+        selectedOption = null;
+        selectedRating = null;
         renderWine();
       }
     }
@@ -473,7 +461,6 @@ function updateWaitingList(players) {
   list.innerHTML = Object.values(players).map(p =>
     `<div class="waiting-item"><div class="waiting-dot"></div><div class="waiting-name">${p.name}</div></div>`
   ).join('');
-  // Enable start button for organizer
   const btn = document.getElementById('startCataBtn');
   if (btn && btn.style.display !== 'none') {
     btn.disabled = count === 0;
@@ -485,18 +472,18 @@ function updateOrganizerPanel(players) {
   const list = document.getElementById('orgPlayersList');
   if (!list) return;
   const all = Object.values(players);
-  const ready = all.filter(p => p.completed >= currentWine+1).length;
+  const answeredCount = all.filter(p => p.currentWineAnswered === currentWine).length;
   list.innerHTML = `
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-      <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; font-weight:700;">Estado de participantes</div>
-      <div style="font-size:12px; color:rgba(253,246,236,0.6);">${ready}/${all.length} han respondido</div>
+    <div class="org-players-header">
+      <div class="org-players-title">Estado participantes</div>
+      <div class="org-players-count">${answeredCount}/${all.length} han respondido</div>
     </div>
     ${all.map(p => {
-      const hasAnswered = p.completed >= currentWine+1;
+      const hasAnswered = p.currentWineAnswered === currentWine;
       return `<div class="org-player-row">
-        <div style="width:10px; height:10px; border-radius:50%; background:${hasAnswered ? 'var(--green)' : 'rgba(253,246,236,0.2)'}; flex-shrink:0;"></div>
+        <div class="org-status-dot ${hasAnswered ? 'answered' : 'thinking'}"></div>
         <div class="org-player-name">${p.name}</div>
-        <div class="org-player-status ${hasAnswered ? 'org-player-done' : ''}">
+        <div class="org-player-status ${hasAnswered ? 'answered' : 'thinking'}">
           ${hasAnswered ? '✅ Respondido' : '⏳ Pensando...'}
         </div>
       </div>`;
@@ -507,7 +494,7 @@ function updateOrganizerPanel(players) {
 function checkAllFinished(players) {
   const all = Object.values(players);
   if (all.length === 0) return;
-  if (all.every(p => p.finished)) {
+  if (all.every(p => p.finished === true)) {
     if (firebaseReady && isOrganizer) {
       const { ref, update } = window._fb;
       update(ref(db, `rooms/${roomCode}`), { status:'podium' });
@@ -515,9 +502,19 @@ function checkAllFinished(players) {
   }
 }
 
-// ══════════════════════════════════════════════════════
-//  SCREENS
-// ══════════════════════════════════════════════════════
+// ── Reset answered flags for ALL players when organizer changes wine ──
+async function resetAllAnsweredFlags() {
+  if (!firebaseReady) return;
+  const { ref, get, update } = window._fb;
+  const snap = await get(ref(db, `rooms/${roomCode}/players`));
+  const players = snap.val() || {};
+  const updates = {};
+  Object.keys(players).forEach(pid => {
+    updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1;
+  });
+  await update(ref(db), updates);
+}
+
 function showWaitingRoom() {
   document.getElementById('setupScreen').classList.add('hidden');
   document.getElementById('waitingScreen').classList.remove('hidden');
@@ -542,37 +539,19 @@ window.startCata = function() {
 
 function beginTasting(idx) {
   currentWine = idx; answers = []; shuffledOptions = [];
+  selectedOption = null; selectedRating = null;
   document.getElementById('waitingScreen').classList.add('hidden');
   document.getElementById('tastingScreen').classList.remove('hidden');
   renderWine();
 }
 
-// ══════════════════════════════════════════════════════
-//  ORGANIZER CONTROLS
-// ══════════════════════════════════════════════════════
+// ── Organizer navigation ──
 function updateOrganizerButtons() {
-  const prevBtn = document.getElementById('orgPrevBtn');
-  const nextBtn = document.getElementById('orgNextBtn');
-  const num = document.getElementById('orgWineNum');
-  num.textContent = currentWine + 1;
-  prevBtn.disabled = currentWine === 0;
-  if (currentWine >= wines.length - 1) {
-    nextBtn.textContent = '🏁 Finalizar Cata';
-  } else {
-    nextBtn.textContent = `Siguiente vino → (${currentWine+2}/${wines.length})`;
-  }
-}
-
-async function resetPlayersAnsweredFlag() {
-  if (!firebaseReady) return;
-  const { ref, get, update } = window._fb;
-  const snap = await get(ref(db, `rooms/${roomCode}/players`));
-  const players = snap.val() || {};
-  const updates = {};
-  Object.keys(players).forEach(pid => {
-    updates[`rooms/${roomCode}/players/${pid}/currentWineAnswered`] = -1;
-  });
-  await update(ref(db), updates);
+  document.getElementById('orgWineNum').textContent = currentWine + 1;
+  document.getElementById('orgPrevBtn').disabled = currentWine === 0;
+  document.getElementById('orgNextBtn').textContent = currentWine >= wines.length - 1
+    ? '🏁 Finalizar Cata'
+    : `Siguiente vino → (${currentWine+2}/${wines.length})`;
 }
 
 window.organizerNext = async function() {
@@ -585,8 +564,8 @@ window.organizerNext = async function() {
     }
     return;
   }
+  await resetAllAnsweredFlags();
   currentWine++;
-  await resetPlayersAnsweredFlag();
   if (firebaseReady) {
     const { ref, update } = window._fb;
     update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine });
@@ -596,8 +575,8 @@ window.organizerNext = async function() {
 
 window.organizerPrev = async function() {
   if (currentWine <= 0) return;
+  await resetAllAnsweredFlags();
   currentWine--;
-  await resetPlayersAnsweredFlag();
   if (firebaseReady) {
     const { ref, update } = window._fb;
     update(ref(db, `rooms/${roomCode}`), { currentWineIndex: currentWine });
@@ -605,9 +584,7 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
-// ══════════════════════════════════════════════════════
-//  RENDER WINE
-// ══════════════════════════════════════════════════════
+// ── Render wine card ──
 window.toggleGuide = function() {
   document.getElementById('guideToggleBtn').classList.toggle('open');
   document.getElementById('guidePanel').classList.toggle('open');
@@ -667,15 +644,18 @@ function renderWine() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+// ── selectOption: write to Firebase immediately so organizer sees it ──
 window.selectOption = async function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
   selectedOption = wineName;
   document.getElementById('nextBtn').disabled = false;
-  // Notify Firebase immediately so organizer sees "Respondido"
+  // Write answered flag immediately
   if (firebaseReady) {
     const { ref, update } = window._fb;
-    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), { currentWineAnswered: currentWine });
+    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
+      currentWineAnswered: currentWine
+    });
   }
 };
 
@@ -685,12 +665,13 @@ window.selectRating = function(el, n) {
   selectedRating = n;
 };
 
-// ══════════════════════════════════════════════════════
-//  NAVIGATION (participants only)
-// ══════════════════════════════════════════════════════
 function saveAnswer() {
   const isCorrect = selectedOption && selectedOption===wines[currentWine].correctAnswer;
-  answers[currentWine] = { wineId:wines[currentWine].id, wineName:wines[currentWine].name, correctAnswer:wines[currentWine].correctAnswer, guess:selectedOption, rating:selectedRating, correct:isCorrect };
+  answers[currentWine] = {
+    wineId:wines[currentWine].id, wineName:wines[currentWine].name,
+    correctAnswer:wines[currentWine].correctAnswer,
+    guess:selectedOption, rating:selectedRating, correct:isCorrect
+  };
 }
 
 async function pushScore(finished) {
@@ -707,23 +688,17 @@ window.nextWine = async function() {
   saveAnswer();
   const isLast = currentWine >= wines.length - 1;
   await pushScore(isLast);
-  // Go to waiting screen — organizer controls when to advance
   document.getElementById('tastingScreen').classList.add('hidden');
   document.getElementById('wineWaitingScreen').classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
-// ══════════════════════════════════════════════════════
-//  PODIUM
-// ══════════════════════════════════════════════════════
+// ── Podium ──
 async function showPodium() {
-  // Hide all other screens
-  ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
+  ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen'].forEach(id =>
+    document.getElementById(id).classList.add('hidden'));
   document.getElementById('podiumScreen').classList.remove('hidden');
 
-  // Get final players data
   let players = {};
   if (firebaseReady) {
     const { ref, get } = window._fb;
@@ -737,8 +712,6 @@ async function showPodium() {
   const sorted = Object.values(players).sort((a,b)=>b.score-a.score);
   const medals = ['🥇','🥈','🥉'];
   const placeClass = ['place-1','place-2','place-3'];
-
-  // Build podium (order: 2nd, 1st, 3rd)
   const podiumOrder = [sorted[1], sorted[0], sorted[2]].filter(Boolean);
   const podiumPlaces = sorted[1] ? [2,1,3] : [1];
 
@@ -753,10 +726,8 @@ async function showPodium() {
           <div class="podium-block">${place}</div>
         </div>`;
       }).join('')}
-    </div>
-  `;
+    </div>`;
 
-  // Full ranking
   document.getElementById('fullRanking').innerHTML = sorted.map((p,i) => `
     <div class="rank-row${p.name===participantName?' me':''}">
       <div class="rank-pos" style="color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--gold)'}">${medals[i]||i+1}</div>
@@ -764,7 +735,6 @@ async function showPodium() {
       <div class="rank-score">${p.score}<span style="font-size:12px;color:rgba(253,246,236,0.5);">/6</span></div>
     </div>`).join('');
 
-  // Personal summary (only for participants)
   if (!isOrganizer) {
     document.getElementById('summaryName').textContent = participantName;
     const score = answers.filter(a=>a.correct).length;
@@ -785,13 +755,9 @@ async function showPodium() {
   } else {
     document.getElementById('personalSummaryCard').style.display = 'none';
   }
-
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ══════════════════════════════════════════════════════
-//  EMAIL
-// ══════════════════════════════════════════════════════
 window.sendResults = function() {
   const orgEmail = document.getElementById('organizerEmail').value.trim();
   if (!orgEmail||!orgEmail.includes('@')) { showToast('Introduce el email del organizador 📧'); return; }
@@ -804,25 +770,21 @@ window.sendResults = function() {
   showToast('¡Abriendo tu app de correo! 📬');
 };
 
-// ══════════════════════════════════════════════════════
-//  MODAL / RESTART
-// ══════════════════════════════════════════════════════
 window.openModal = function(id) { document.getElementById(id).classList.add('show'); };
 window.closeModal = function(id) { document.getElementById(id).classList.remove('show'); };
 window.confirmRestart = function() {
   closeModal('restartModal');
-  participantName=''; currentWine=0; answers=[]; shuffledOptions=[]; selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false;
+  participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
+  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false;
   document.getElementById('participantName').value='';
-  ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen']
+    .forEach(id => document.getElementById(id).classList.add('hidden'));
   document.getElementById('setupScreen').classList.remove('hidden');
   document.getElementById('progressFill').style.width='0%';
   window.scrollTo({top:0,behavior:'smooth'});
   showToast('¡Listo para una nueva cata! 🍷');
 };
 
-// ══════════════════════════════════════════════════════
-//  CONFETTI / TOAST / DROPS
-// ══════════════════════════════════════════════════════
 function launchConfetti() {
   const canvas=document.getElementById('confettiCanvas'), ctx=canvas.getContext('2d');
   canvas.width=window.innerWidth; canvas.height=window.innerHeight;
@@ -845,9 +807,6 @@ window.showToast = showToast;
   for(let i=0;i<10;i++){const d=document.createElement('div');d.className='drop';const s=20+Math.random()*60;d.style.cssText=`width:${s}px;height:${s*1.3}px;left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${-Math.random()*15}s;`;c.appendChild(d);}
 })();
 
-// ══════════════════════════════════════════════════════
-//  BOOT
-// ══════════════════════════════════════════════════════
 initFirebase().then(ready => {
   if (!ready) showToast('Modo local activado (sin Firebase)');
 });
