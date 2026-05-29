@@ -102,17 +102,18 @@
   .podium-wrap { padding:10px 0 20px; }
   .podium-stage { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:24px; }
   .podium-place { display:flex; flex-direction:column; align-items:center; }
-  /* Bloque de altura variable — viene primero visualmente */
-  .podium-block { width:80px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:var(--cream); }
+  /* Bloque de altura variable */
+  .podium-block { width:82px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:700; color:var(--cream); }
   .place-1 .podium-block { height:90px; background:linear-gradient(180deg,rgba(255,215,0,0.45),rgba(255,215,0,0.15)); border:1px solid rgba(255,215,0,0.5); }
   .place-2 .podium-block { height:65px; background:linear-gradient(180deg,rgba(192,192,192,0.45),rgba(192,192,192,0.15)); border:1px solid rgba(192,192,192,0.5); }
   .place-3 .podium-block { height:45px; background:linear-gradient(180deg,rgba(205,127,50,0.45),rgba(205,127,50,0.15)); border:1px solid rgba(205,127,50,0.5); }
-  /* Info encima del bloque */
-  .podium-info { display:flex; flex-direction:column; align-items:center; margin-bottom:6px; width:80px; }
-  .podium-medal { font-size:26px; line-height:1; margin-bottom:4px; }
-  .podium-pname { font-size:11px; font-weight:700; color:var(--cream); text-align:center; line-height:1.3; word-break:break-word; width:100%; }
-  .podium-pscore { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; margin-top:3px; }
-  .place-1 .podium-pscore { color:#FFD700; }
+  .place-tie .podium-block { height:90px; background:linear-gradient(180deg,rgba(255,215,0,0.45),rgba(255,215,0,0.15)); border:1px solid rgba(255,215,0,0.5); }
+  /* Info encima del bloque — separada claramente del bloque */
+  .podium-info { display:flex; flex-direction:column; align-items:center; margin-bottom:8px; width:82px; padding:8px 4px 6px; background:rgba(0,0,0,0.25); border:1px solid rgba(201,168,76,0.2); border-radius:10px; }
+  .podium-medal { font-size:22px; line-height:1; margin-bottom:5px; }
+  .podium-pname { font-size:10px; font-weight:700; color:var(--cream); text-align:center; line-height:1.4; word-break:break-word; width:100%; padding:0 2px; }
+  .podium-pscore { font-family:'Playfair Display',serif; font-size:14px; font-weight:700; margin-top:4px; }
+  .place-1 .podium-pscore, .place-tie .podium-pscore { color:#FFD700; }
   .place-2 .podium-pscore { color:#C0C0C0; }
   .place-3 .podium-pscore { color:#CD7F32; }
 
@@ -696,24 +697,48 @@ window.nextWine = async function() {
 
 // ── Helper: build podium stage HTML (shared by players & wines podium) ──
 function buildPodiumHTML(items) {
-  // items: array of { label, score, scoreLabel }
-  // sorted descending already; we display as 2nd-1st-3rd
-  const medals = ['🥇','🥈','🥉'];
-  const placeClass = ['place-1','place-2','place-3'];
-  const hasTwo = items.length >= 2;
-  const order = hasTwo ? [items[1], items[0], items[2]].filter(Boolean) : [items[0]];
-  const places = hasTwo ? [2,1,3] : [1];
+  // items: array of { label, scoreLabel, scoreValue }
+  // Assign ranks respecting ties: same scoreValue → same rank
+  const ranked = items.map((item, i) => {
+    const rank = items.filter(x => x.scoreValue > item.scoreValue).length + 1;
+    return { ...item, rank };
+  });
 
-  return `<div class="podium-stage">
-    ${order.map((item, i) => {
-      const place = places[i];
-      return `<div class="podium-place ${placeClass[place-1]||''}">
+  // Only show top 3 unique ranks on the podium stage
+  const podiumItems = ranked.filter(x => x.rank <= 3);
+
+  // Group by rank for tie detection
+  const byRank = {};
+  podiumItems.forEach(x => { (byRank[x.rank] = byRank[x.rank]||[]).push(x); });
+
+  const medalMap = { 1:'🥇', 2:'🥈', 3:'🥉' };
+  const colorMap = { 1:'#FFD700', 2:'#C0C0C0', 3:'#CD7F32' };
+  const heightMap = { 1:90, 2:65, 3:45 };
+
+  // Build display order: rank2 left, rank1 center, rank3 right
+  // For ties at rank1, all tied items go center at same height
+  const displayOrder = [];
+  if (byRank[2]) byRank[2].forEach(x => displayOrder.push({ ...x, side:'left' }));
+  if (byRank[1]) byRank[1].forEach(x => displayOrder.push({ ...x, side:'center' }));
+  if (byRank[3]) byRank[3].forEach(x => displayOrder.push({ ...x, side:'right' }));
+
+  const isTied = (rank) => byRank[rank] && byRank[rank].length > 1;
+
+  return `<div class="podium-stage" style="flex-wrap:wrap; gap:8px;">
+    ${displayOrder.map(item => {
+      const h = heightMap[item.rank] || 45;
+      const color = colorMap[item.rank] || 'var(--gold)';
+      const medal = medalMap[item.rank] || '🍷';
+      const borderColor = item.rank===1 ? 'rgba(255,215,0,0.5)' : item.rank===2 ? 'rgba(192,192,192,0.5)' : 'rgba(205,127,50,0.5)';
+      const bgColor = item.rank===1 ? 'rgba(255,215,0,0.3),rgba(255,215,0,0.1)' : item.rank===2 ? 'rgba(192,192,192,0.3),rgba(192,192,192,0.1)' : 'rgba(205,127,50,0.3),rgba(205,127,50,0.1)';
+      const tieLabel = isTied(item.rank) ? ' 🤝' : '';
+      return `<div class="podium-place" style="align-items:center;">
         <div class="podium-info">
-          <div class="podium-medal">${medals[place-1]||'🍷'}</div>
+          <div class="podium-medal">${medal}${tieLabel}</div>
           <div class="podium-pname">${item.label}</div>
-          <div class="podium-pscore">${item.scoreLabel}</div>
+          <div class="podium-pscore" style="color:${color};">${item.scoreLabel}</div>
         </div>
-        <div class="podium-block">${place}</div>
+        <div class="podium-block" style="height:${h}px; border:1px solid ${borderColor}; background:linear-gradient(180deg,${bgColor}); width:82px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--cream);">${item.rank}</div>
       </div>`;
     }).join('')}
   </div>`;
@@ -738,7 +763,7 @@ async function showPodium() {
   const sorted = Object.values(players).sort((a,b)=>b.score-a.score);
 
   document.getElementById('podiumWrap').innerHTML = buildPodiumHTML(
-    sorted.map(p => ({ label: p.name, scoreLabel: `${p.score}/6` }))
+    sorted.map(p => ({ label: p.name, scoreLabel: `${p.score}/6`, scoreValue: p.score }))
   );
 
   const rankMedals = ['🥇','🥈','🥉'];
@@ -799,7 +824,7 @@ async function showPodium() {
   const bestWineEl = document.getElementById('bestWinePodium');
   if (bestWineEl) {
     bestWineEl.innerHTML =
-      buildPodiumHTML(sortedWines.map(w => ({ label: w.name, scoreLabel: `${w.total} pts` }))) +
+      buildPodiumHTML(sortedWines.map(w => ({ label: w.name, scoreLabel: `${w.total} pts`, scoreValue: w.total }))) +
       `<div style="font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 10px;font-weight:700;">Clasificación completa de vinos</div>
       <div class="full-ranking">
         ${sortedWines.map((w,i) => `
