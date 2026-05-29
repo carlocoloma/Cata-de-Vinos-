@@ -485,15 +485,23 @@ function updateWaitingList(players) {
 function updateOrganizerPanel(players) {
   const list = document.getElementById('orgPlayersList');
   if (!list) return;
+  const all = Object.values(players);
+  const ready = all.filter(p => p.completed >= currentWine+1).length;
   list.innerHTML = `
-    <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; font-weight:700;">Estado de participantes</div>
-    ${Object.values(players).map(p => `
-      <div class="org-player-row">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; font-weight:700;">Estado de participantes</div>
+      <div style="font-size:12px; color:rgba(253,246,236,0.6);">${ready}/${all.length} han respondido</div>
+    </div>
+    ${all.map(p => {
+      const hasAnswered = p.completed >= currentWine+1;
+      return `<div class="org-player-row">
+        <div style="width:10px; height:10px; border-radius:50%; background:${hasAnswered ? 'var(--green)' : 'rgba(253,246,236,0.2)'}; flex-shrink:0; box-shadow:${hasAnswered ? '0 0 6px rgba(46,204,113,0.6)' : 'none'};"></div>
         <div class="org-player-name">${p.name}</div>
-        <div class="org-player-status ${p.completed >= currentWine+1 ? 'org-player-done':''}">
-          ${p.completed >= currentWine+1 ? '✅ Listo' : `⏳ Vino ${p.completed+1}`}
+        <div class="org-player-status ${hasAnswered ? 'org-player-done' : ''}">
+          ${hasAnswered ? '✅ Respondido' : '⏳ Pensando...'}
         </div>
-      </div>`).join('')}
+      </div>`;
+    }).join('')}
   `;
 }
 
