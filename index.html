@@ -696,6 +696,14 @@ window.nextWine = async function() {
 };
 
 // ── Helper: build podium stage HTML (shared by players & wines podium) ──
+// ── Helper: assign ranks respecting ties ──
+function assignRanks(items) {
+  return items.map((item, i, arr) => {
+    const rank = arr.findIndex(x => x.scoreValue === item.scoreValue) + 1;
+    return { ...item, rank };
+  });
+}
+
 function buildPodiumHTML(items) {
   // items: array of { label, scoreLabel, scoreValue }
   // Assign ranks respecting ties: same scoreValue → same rank
@@ -827,12 +835,16 @@ async function showPodium() {
       buildPodiumHTML(sortedWines.map(w => ({ label: w.name, scoreLabel: `${w.total} pts`, scoreValue: w.total }))) +
       `<div style="font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 10px;font-weight:700;">Clasificación completa de vinos</div>
       <div class="full-ranking">
-        ${sortedWines.map((w,i) => `
-          <div class="rank-row">
-            <div class="rank-pos" style="color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--gold)'}">${wMedals[i]||i+1}</div>
+        ${sortedWines.map((w, i) => {
+          const rank = sortedWines.filter(x => x.total > w.total).length + 1;
+          const medal = wMedals[rank-1] || rank;
+          const color = rank===1?'#FFD700':rank===2?'#C0C0C0':rank===3?'#CD7F32':'var(--gold)';
+          return `<div class="rank-row">
+            <div class="rank-pos" style="color:${color}">${medal}</div>
             <div class="rank-name" style="font-size:12px;">${w.name}</div>
             <div class="rank-score" style="font-size:18px;">${w.total}<span style="font-size:11px;color:rgba(253,246,236,0.5);"> pts</span></div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>`;
   }
 
