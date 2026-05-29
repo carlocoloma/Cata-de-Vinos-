@@ -604,7 +604,8 @@ function renderWine() {
   selectedOption = prev ? prev.guess : null;
   selectedRating = prev ? prev.rating : null;
 
-  // Vinos ya usados en otras rondas (no en la actual)
+  // Vinos ya usados en otras rondas (no en la actual ni en la que se está editando)
+  // Si estamos editando un vino anterior, su selección previa se libera para poder cambiarla
   const usedWines = answers
     .filter((a, i) => a && a.guess && i !== currentWine)
     .map(a => a.guess);
