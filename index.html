@@ -155,7 +155,7 @@
 <div class="modal-overlay" id="restartModal">
   <div class="modal-box">
     <h3>🔄 ¿Volver a empezar?</h3>
-    <p>Se perderán todas tus respuestas. ¿Estás seguro?</p>
+    <p>Se perderán todas las respuestas. ¿Estás seguro?</p>
     <div class="modal-btns">
       <button class="btn btn-ghost" onclick="closeModal('restartModal')">Cancelar</button>
       <button class="btn btn-danger" onclick="confirmRestart()">Sí, reiniciar</button>
@@ -261,7 +261,7 @@
     </div>
     <div class="card" id="wineCard"></div>
     <div style="margin:0 16px 12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-      <button class="btn btn-back" id="prevWineBtn" onclick="goToPrevWine()" style="display:none;">← Vino anterior</button>
+      <button class="btn btn-back" id="prevWineBtn" onclick="goToPrevWine()" style="display:none;">← Anterior</button>
       <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled style="grid-column: span 2;">Siguiente →</button>
     </div>
   </div>
@@ -335,12 +335,12 @@ const firebaseConfig = {
 };
 
 const wines = [
-  { id:1, name:"Vino 1", correctAnswer:"Marqués de Riscal Crianza", shortDesc:"Clásico riojano de la bodega más antigua de la D.O. Rioja. 12 meses en barrica americana. Elegante, equilibrado y muy reconocible.", aromas:["Cereza","Ciruela","Vainilla","Coco","Pimienta","Clavo"] },
-  { id:2, name:"Vino 2", correctAnswer:"Faustino V Crianza", shortDesc:"Icónico vino riojano con botella esmerilada. Crianza en barrica americana y francesa. Suave, frutal y muy accesible.", aromas:["Fresa","Mora","Frambuesa","Vainilla","Tostado","Floral"] },
-  { id:3, name:"Vino 3", correctAnswer:"Viña Albali Crianza", shortDesc:"Referente de Valdepeñas, D.O. manchega. Elaborado con Cencibel (Tempranillo). Carácter mediterráneo y relación calidad-precio excepcional.", aromas:["Mora","Ciruela pasa","Mermelada","Tomillo","Chocolate","Madera"] },
-  { id:4, name:"Vino 4", correctAnswer:"Beronia Crianza", shortDesc:"Crianza de Rioja Alta con 12 meses en barrica americana. Estilo clásico riojano con gran expresión frutal y elegancia natural.", aromas:["Cereza","Grosella","Violeta","Vainilla","Especias","Fresco"] },
-  { id:5, name:"Vino 5", correctAnswer:"Protos Crianza", shortDesc:"Embajador de Ribera del Duero. Elaborado con Tinto Fino. Potente, estructurado y con la personalidad inconfundible del Duero.", aromas:["Mora","Arándano","Ciruela","Pimienta negra","Café","Cacao"] },
-  { id:6, name:"Vino 6", correctAnswer:"Pago de los Capellanes Crianza", shortDesc:"Joya de Ribera del Duero con viñas viejas. Crianza en barrica francesa. Complejo, elegante y con una profundidad que lo distingue del resto.", aromas:["Mora","Cassis","Tierra","Grafito","Cedro","Tabaco"] }
+  { id:1, name:"Vino 1", correctAnswer:"Marqués de Riscal Crianza", shortDesc:"Clásico riojano de la bodega más antigua de la D.O. Rioja.", aromas:["Cereza","Ciruela","Vainilla","Coco","Pimienta","Clavo"] },
+  { id:2, name:"Vino 2", correctAnswer:"Faustino V Crianza", shortDesc:"Icónico vino riojano con botella esmerilada.", aromas:["Fresa","Mora","Frambuesa","Vainilla","Tostado","Floral"] },
+  { id:3, name:"Vino 3", correctAnswer:"Viña Albali Crianza", shortDesc:"Referente de Valdepeñas, D.O. manchega.", aromas:["Mora","Ciruela pasa","Mermelada","Tomillo","Chocolate","Madera"] },
+  { id:4, name:"Vino 4", correctAnswer:"Beronia Crianza", shortDesc:"Crianza de Rioja Alta con 12 meses en barrica americana.", aromas:["Cereza","Grosella","Violeta","Vainilla","Especias","Fresco"] },
+  { id:5, name:"Vino 5", correctAnswer:"Protos Crianza", shortDesc:"Embajador de Ribera del Duero.", aromas:["Mora","Arándano","Ciruela","Pimienta negra","Café","Cacao"] },
+  { id:6, name:"Vino 6", correctAnswer:"Pago de los Capellanes Crianza", shortDesc:"Joya de Ribera del Duero con viñas viejas.", aromas:["Mora","Cassis","Tierra","Grafito","Cedro","Tabaco"] }
 ];
 
 const wineOptions = [
@@ -352,17 +352,11 @@ const wineOptions = [
   { name:"Pago de los Capellanes\nCrianza", region:"Ribera del Duero", emoji:"🍷" }
 ];
 
-const doPorVino = {
-  "Marqués de Riscal Crianza":"D.O. Rioja","Faustino V Crianza":"D.O. Rioja",
-  "Viña Albali Crianza":"D.O. Valdepeñas","Beronia Crianza":"D.O. Rioja",
-  "Protos Crianza":"D.O. Ribera del Duero","Pago de los Capellanes Crianza":"D.O. Ribera del Duero"
-};
-
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
 let cachedPlayers = {};
-let orgCurrentWine = 0;   // índice actual del organizador, se actualiza por Firebase
-let editingPrev = false;  // true cuando el participante ha retrocedido a editar
+let orgCurrentWine = 0;
+let editingPrev = false;
 
 async function initFirebase() {
   try {
@@ -440,7 +434,7 @@ function listenToRoom() {
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
     if (idx === null) return;
-    orgCurrentWine = idx; // siempre actualizamos el índice del organizador
+    orgCurrentWine = idx;
 
     if (!isOrganizer) {
       const tasting = document.getElementById('tastingScreen');
@@ -450,13 +444,10 @@ function listenToRoom() {
 
       if (isOnTasting || isOnWaiting) {
         if (editingPrev) {
-          // Está editando un vino anterior: no interrumpir,
-          // al confirmar saltará al vino correcto del organizador
-          // Solo actualizamos el botón para reflejar el nuevo destino
+          // Está editando: solo actualizar el texto del botón confirmar
           renderWine();
           return;
         }
-        // En cualquier otro caso (esperando o respondiendo), mover al nuevo vino del organizador
         currentWine = idx;
         selectedOption = answers[idx] ? answers[idx].guess : null;
         selectedRating = answers[idx] ? answers[idx].rating : null;
@@ -509,9 +500,7 @@ function checkAllFinished(players) {
     if (firebaseReady) {
       const { ref, update } = window._fb;
       update(ref(db, `rooms/${roomCode}`), { status:'podium' });
-    } else {
-      showPodium();
-    }
+    } else showPodium();
   }
 }
 
@@ -584,15 +573,18 @@ window.organizerPrev = async function() {
   updateOrganizerButtons();
 };
 
-// Volver al vino anterior para editar
+// Retroceder un paso: libera el vino actual Y el anterior, permitiendo elegir libremente
 window.goToPrevWine = function() {
   if (currentWine <= 0) return;
-  // Guardar selección actual si existe
-  if (selectedOption) saveAnswer();
+  // Liberar respuesta del vino en el que estamos ahora
+  answers[currentWine] = null;
+  // Retroceder
   currentWine--;
+  // Liberar también la respuesta del vino al que volvemos
+  answers[currentWine] = null;
   editingPrev = true;
-  selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
-  selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
+  selectedOption = null;
+  selectedRating = null;
   renderWine();
 };
 
@@ -605,12 +597,12 @@ function renderWine() {
 
   if (!shuffledOptions[currentWine]) shuffledOptions[currentWine] = [...wineOptions].sort(() => Math.random() - 0.5);
   const opts = shuffledOptions[currentWine];
-  const prev = answers[currentWine];
-  selectedOption = prev ? prev.guess : null;
-  selectedRating = prev ? prev.rating : null;
 
-  // Vinos ya usados en otras rondas (no en la actual ni en la que se está editando)
-  // Si estamos editando un vino anterior, su selección previa se libera para poder cambiarla
+  // Restaurar selección guardada para este vino (null si fue liberada)
+  selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
+  selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
+
+  // Vinos usados = los que tienen respuesta guardada en OTRAS rondas distintas a la actual
   const usedWines = answers
     .filter((a, i) => a && a.guess && i !== currentWine)
     .map(a => a.guess);
@@ -643,7 +635,6 @@ function renderWine() {
     <div class="section-label">⭐ Tu puntuación para este vino</div>
     <div class="rating-row">${ratingHTML}</div>`;
 
-  // Botón volver atrás
   const prevBtn = document.getElementById('prevWineBtn');
   const nextBtn = document.getElementById('nextBtn');
   if (currentWine > 0) {
@@ -664,8 +655,7 @@ function renderWine() {
 window.selectOption = function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected'); selectedOption = wineName;
-  const nextBtn = document.getElementById('nextBtn');
-  nextBtn.disabled = false;
+  document.getElementById('nextBtn').disabled = false;
 };
 
 window.selectRating = function(el, n) {
@@ -699,7 +689,7 @@ window.nextWine = async function() {
       updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
     }
 
-    // Si veníamos editando un vino anterior, saltar al vino actual del organizador
+    // Si veníamos editando y el organizador ya está más adelante, saltar a su vino
     if (editingPrev && wineAnsweredNow < orgCurrentWine) {
       editingPrev = false;
       currentWine = orgCurrentWine;
@@ -720,11 +710,9 @@ window.nextWine = async function() {
     document.getElementById('tastingScreen').classList.add('hidden');
     document.getElementById('wineWaitingScreen').classList.remove('hidden');
   } else {
-    // Avanzar normalmente al siguiente vino
     currentWine++;
     selectedOption = answers[currentWine] ? answers[currentWine].guess : null;
     selectedRating = answers[currentWine] ? answers[currentWine].rating : null;
-    // Si ya respondimos este vino antes (por edición), mostrarlo; si no, esperar al organizador
     if (currentWine <= orgCurrentWine) {
       renderWine();
     } else {
@@ -875,6 +863,7 @@ window.sendResults = function() {
 
 window.openModal = function(id) { document.getElementById(id).classList.add('show'); };
 window.closeModal = function(id) { document.getElementById(id).classList.remove('show'); };
+
 function localReset() {
   participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
   selectedOption=null; selectedRating=null; isOrganizer=false;
@@ -889,12 +878,10 @@ function localReset() {
 
 window.confirmRestart = async function() {
   closeModal('restartModal');
-  // Si es el organizador, notificar a todos los participantes vía Firebase
   if (isOrganizer && firebaseReady && roomCode) {
     const { ref, update } = window._fb;
     await update(ref(db, `rooms/${roomCode}`), { status: 'restart', currentWineIndex: 0 });
   }
-  const savedRoomCode = roomCode;
   roomCode = '';
   localReset();
   showToast('¡Listo para una nueva cata! 🍷');
