@@ -244,6 +244,9 @@
         </div>
         <div id="orgPlayersRows"></div>
       </div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-danger" onclick="openModal('restartModal')">🔄 Volver a Empezar</button>
+      </div>
     </div>
   </div>
 
@@ -428,6 +431,11 @@ function listenToRoom() {
       if (!document.getElementById('waitingScreen').classList.contains('hidden')) beginTasting(0);
     }
     if (status === 'podium') showPodium();
+    if (status === 'restart' && !isOrganizer) {
+      roomCode = '';
+      localReset();
+      showToast('El organizador ha reiniciado la cata 🔄');
+    }
   });
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
@@ -861,10 +869,9 @@ window.sendResults = function() {
 
 window.openModal = function(id) { document.getElementById(id).classList.add('show'); };
 window.closeModal = function(id) { document.getElementById(id).classList.remove('show'); };
-window.confirmRestart = function() {
-  closeModal('restartModal');
+function localReset() {
   participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
-  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false;
+  selectedOption=null; selectedRating=null; isOrganizer=false;
   cachedPlayers={}; orgCurrentWine=0; editingPrev=false;
   document.getElementById('participantName').value='';
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen']
@@ -872,6 +879,18 @@ window.confirmRestart = function() {
   document.getElementById('setupScreen').classList.remove('hidden');
   document.getElementById('progressFill').style.width='0%';
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+window.confirmRestart = async function() {
+  closeModal('restartModal');
+  // Si es el organizador, notificar a todos los participantes vía Firebase
+  if (isOrganizer && firebaseReady && roomCode) {
+    const { ref, update } = window._fb;
+    await update(ref(db, `rooms/${roomCode}`), { status: 'restart', currentWineIndex: 0 });
+  }
+  const savedRoomCode = roomCode;
+  roomCode = '';
+  localReset();
   showToast('¡Listo para una nueva cata! 🍷');
 };
 
