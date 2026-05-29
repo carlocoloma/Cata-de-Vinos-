@@ -370,6 +370,7 @@ const doPorVino = {
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
 let cachedPlayers = {};
+let podiumShown = false;
 
 async function initFirebase() {
   try {
@@ -437,14 +438,15 @@ function listenToRoom() {
     if (status === 'started' && !isOrganizer) {
       if (!document.getElementById('waitingScreen').classList.contains('hidden')) beginTasting(0);
     }
-    if (status === 'podium') showPodium();
+    if (status === 'podium' && !podiumShown) showPodium();
   });
   onValue(ref(db, `rooms/${roomCode}/currentWineIndex`), snap => {
     const idx = snap.val();
-    if (!isOrganizer && idx !== null) {
+    if (!isOrganizer && idx !== null && idx !== currentWine) {
       const tasting = document.getElementById('tastingScreen');
       const waiting = document.getElementById('wineWaitingScreen');
-      if (!tasting.classList.contains('hidden') || !waiting.classList.contains('hidden')) {
+      // Solo avanzar si el participante ya respondió este vino (está en espera)
+      if (!waiting.classList.contains('hidden')) {
         currentWine = idx; selectedOption = null; selectedRating = null;
         waiting.classList.add('hidden'); tasting.classList.remove('hidden');
         renderWine();
@@ -485,10 +487,12 @@ function updateWaitingList(players) {
   }
 }
 
+// ── Cata termina automáticamente cuando TODOS los participantes pulsan Terminar ──
 function checkAllFinished(players) {
+  if (podiumShown) return;                          // BUG 2: evitar doble disparo
   const all = Object.values(players);
   if (all.length === 0) return;
-  if (all.every(p => p.finished === true) && isOrganizer && firebaseReady) {
+  if (all.every(p => p.finished === true) && firebaseReady) {
     const { ref, update } = window._fb;
     update(ref(db, `rooms/${roomCode}`), { status:'podium' });
   }
@@ -658,13 +662,10 @@ window.nextWine = async function() {
 };
 
 // ── PODIO HELPER ──────────────────────────────────────────────────────────
-// items: [{ label, scoreValue, scoreLabel }] sorted descending by scoreValue
-// Agrupa los que tienen el mismo scoreValue bajo la misma medalla y bloque
 function buildPodiumHTML(items) {
   const medals = ['🥇','🥈','🥉'];
   const placeClass = ['place-1','place-2','place-3'];
-
-  // 1. Agrupar por scoreValue (ya vienen ordenados desc)
+  // Agrupar por scoreValue (ya vienen ordenados desc)
   const groups = [];
   items.forEach(item => {
     const last = groups[groups.length - 1];
@@ -674,24 +675,17 @@ function buildPodiumHTML(items) {
       groups.push({ scoreValue: item.scoreValue, scoreLabel: item.scoreLabel, labels: [item.label] });
     }
   });
-
-  // 2. Solo los 3 primeros grupos en el podio
   const top = groups.slice(0, 3);
-
-  // 3. Orden visual: 2º izquierda · 1º centro · 3º derecha
   const hasTwo = top.length >= 2;
   const visualOrder = hasTwo ? [top[1], top[0], top[2]].filter(Boolean) : [top[0]];
   const visualPlaces = hasTwo ? [2, 1, 3] : [1];
-
   return `<div class="podium-stage">
     ${visualOrder.map((group, i) => {
       const place = visualPlaces[i];
       const cls = placeClass[place - 1] || '';
       const medal = medals[place - 1] || '🍷';
       const isTie = group.labels.length > 1;
-      const namesHTML = group.labels.map(l =>
-        `<div class="podium-pname">${l}</div>`
-      ).join('');
+      const namesHTML = group.labels.map(l => `<div class="podium-pname">${l}</div>`).join('');
       return `<div class="podium-place ${cls}">
         <div class="podium-info">
           <div class="podium-medal">${medal}${isTie ? ' 🤝' : ''}</div>
@@ -704,12 +698,9 @@ function buildPodiumHTML(items) {
   </div>`;
 }
 
-// ── RANKING HELPER ────────────────────────────────────────────────────────
-// Genera filas de ranking respetando empates (misma medalla para mismo score)
 function buildRankingHTML(items, highlightLabel, scoreUnit) {
   const medals = ['🥇','🥈','🥉'];
-  // Calcular rango real para cada item
-  return items.map((item, i) => {
+  return items.map(item => {
     const rank = items.filter(x => x.scoreValue > item.scoreValue).length;
     const medal = medals[rank] || (rank + 1);
     const color = rank===0?'#FFD700':rank===1?'#C0C0C0':rank===2?'#CD7F32':'var(--gold)';
@@ -723,11 +714,11 @@ function buildRankingHTML(items, highlightLabel, scoreUnit) {
 }
 
 async function showPodium() {
+  podiumShown = true;
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen'].forEach(id =>
     document.getElementById(id).classList.add('hidden'));
   document.getElementById('podiumScreen').classList.remove('hidden');
 
-  // ── Podio jugadores ──
   let players = {};
   if (firebaseReady) {
     const { ref, get } = window._fb;
@@ -745,7 +736,6 @@ async function showPodium() {
   document.getElementById('podiumWrap').innerHTML = buildPodiumHTML(sortedPlayers);
   document.getElementById('fullRanking').innerHTML = buildRankingHTML(sortedPlayers, participantName, '/6');
 
-  // ── Resumen personal ──
   if (!isOrganizer) {
     document.getElementById('summaryName').textContent = participantName;
     const score = answers.filter(a=>a.correct).length;
@@ -767,9 +757,7 @@ async function showPodium() {
     document.getElementById('personalSummaryCard').style.display = 'none';
   }
 
-  // ── Podio mejor vino ──
   let wineTotals = wines.map((w, i) => ({ label: w.correctAnswer, index: i, scoreValue: 0 }));
-
   try {
     if (firebaseReady) {
       const { ref: ref2, get: get2 } = window._fb;
@@ -820,7 +808,7 @@ window.closeModal = function(id) { document.getElementById(id).classList.remove(
 window.confirmRestart = function() {
   closeModal('restartModal');
   participantName=''; currentWine=0; answers=[]; shuffledOptions=[];
-  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false; cachedPlayers={};
+  selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false; cachedPlayers={}; podiumShown=false;
   document.getElementById('participantName').value='';
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen','podiumScreen']
     .forEach(id => document.getElementById(id).classList.add('hidden'));
