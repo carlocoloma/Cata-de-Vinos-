@@ -97,22 +97,25 @@
   @keyframes bounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
   .wine-waiting h3 { font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); margin-bottom:8px; }
   .wine-waiting p { font-size:13px; color:rgba(253,246,236,0.6); line-height:1.6; }
+
+  /* ── PODIO REDISEÑADO ── */
   .podium-wrap { padding:10px 0 20px; }
-  .podium-stage { display:flex; align-items:flex-end; justify-content:center; gap:8px; margin-bottom:24px; height:160px; }
-  .podium-place { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
-  .podium-avatar { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:6px; border:3px solid; }
-  .podium-pname { font-size:11px; font-weight:700; color:var(--cream); text-align:center; margin-bottom:4px; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .podium-pscore { font-family:'Playfair Display',serif; font-size:16px; font-weight:700; margin-bottom:6px; }
-  .podium-block { width:72px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:24px; }
-  .place-1 .podium-avatar { border-color:#FFD700; background:rgba(255,215,0,0.15); }
+  .podium-stage { display:flex; align-items:flex-end; justify-content:center; gap:12px; margin-bottom:24px; }
+  .podium-place { display:flex; flex-direction:column; align-items:center; }
+  /* Bloque de altura variable — viene primero visualmente */
+  .podium-block { width:80px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:var(--cream); }
+  .place-1 .podium-block { height:90px; background:linear-gradient(180deg,rgba(255,215,0,0.45),rgba(255,215,0,0.15)); border:1px solid rgba(255,215,0,0.5); }
+  .place-2 .podium-block { height:65px; background:linear-gradient(180deg,rgba(192,192,192,0.45),rgba(192,192,192,0.15)); border:1px solid rgba(192,192,192,0.5); }
+  .place-3 .podium-block { height:45px; background:linear-gradient(180deg,rgba(205,127,50,0.45),rgba(205,127,50,0.15)); border:1px solid rgba(205,127,50,0.5); }
+  /* Info encima del bloque */
+  .podium-info { display:flex; flex-direction:column; align-items:center; margin-bottom:6px; width:80px; }
+  .podium-medal { font-size:26px; line-height:1; margin-bottom:4px; }
+  .podium-pname { font-size:11px; font-weight:700; color:var(--cream); text-align:center; line-height:1.3; word-break:break-word; width:100%; }
+  .podium-pscore { font-family:'Playfair Display',serif; font-size:15px; font-weight:700; margin-top:3px; }
   .place-1 .podium-pscore { color:#FFD700; }
-  .place-1 .podium-block { height:100px; background:linear-gradient(180deg,rgba(255,215,0,0.3),rgba(255,215,0,0.1)); border:1px solid rgba(255,215,0,0.4); }
-  .place-2 .podium-avatar { border-color:#C0C0C0; background:rgba(192,192,192,0.15); }
   .place-2 .podium-pscore { color:#C0C0C0; }
-  .place-2 .podium-block { height:70px; background:linear-gradient(180deg,rgba(192,192,192,0.3),rgba(192,192,192,0.1)); border:1px solid rgba(192,192,192,0.4); }
-  .place-3 .podium-avatar { border-color:#CD7F32; background:rgba(205,127,50,0.15); }
   .place-3 .podium-pscore { color:#CD7F32; }
-  .place-3 .podium-block { height:50px; background:linear-gradient(180deg,rgba(205,127,50,0.3),rgba(205,127,50,0.1)); border:1px solid rgba(205,127,50,0.4); }
+
   .full-ranking { margin-top:8px; }
   .rank-row { display:flex; align-items:center; gap:10px; padding:10px 14px; background:rgba(0,0,0,0.2); border:1px solid rgba(201,168,76,0.15); border-radius:12px; margin-bottom:6px; }
   .rank-row.me { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.08); }
@@ -288,6 +291,7 @@
 
   <!-- PODIUM -->
   <div id="podiumScreen" class="screen hidden">
+    <!-- Podio jugadores -->
     <div class="card">
       <div style="text-align:center; margin-bottom:20px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:6px;">Resultado Final</div>
@@ -298,6 +302,7 @@
       <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; font-weight:700;">Clasificación completa</div>
       <div class="full-ranking" id="fullRanking"></div>
     </div>
+    <!-- Resumen personal -->
     <div class="card" id="personalSummaryCard">
       <div style="text-align:center; margin-bottom:14px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:4px;">Tu resultado</div>
@@ -310,15 +315,10 @@
         </div>
         <div class="score-msg" id="scoreMsg"></div>
       </div>
-      <div style="text-align:center; margin-bottom:14px;">
-        <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:6px;">Puntuación total a los vinos</div>
-        <div style="font-family:'Playfair Display',serif; font-size:36px; font-weight:700; color:var(--gold-light);" id="totalRatingDisplay">—</div>
-        <div style="font-size:11px; color:rgba(253,246,236,0.4);">suma de tus puntuaciones (máx. 60)</div>
-      </div>
       <div class="gold-divider"><span>🍷</span></div>
       <div id="summaryList"></div>
     </div>
-    <!-- BEST WINE PODIUM -->
+    <!-- Podio mejor vino -->
     <div class="card" id="bestWineCard">
       <div style="text-align:center; margin-bottom:16px;">
         <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:6px;">Podio de los vinos</div>
@@ -327,6 +327,7 @@
       </div>
       <div id="bestWinePodium"></div>
     </div>
+    <!-- Acciones -->
     <div class="card" style="text-align:center;">
       <div class="input-wrap">
         <input type="email" id="organizerEmail" value="carlocoloma@gmail.com" placeholder="Email del organizador..."/>
@@ -375,7 +376,6 @@ const doPorVino = {
 
 let participantName='', currentWine=0, answers=[], selectedOption=null, selectedRating=null, shuffledOptions=[];
 let roomCode='', isOrganizer=false, myPlayerId='', db=null, firebaseReady=false;
-// Local cache of players for organizer panel
 let cachedPlayers = {};
 
 async function initFirebase() {
@@ -422,7 +422,6 @@ window.joinRoom = async function() {
     const { ref, get, set } = window._fb;
     const snap = await get(ref(db, `rooms/${roomCode}`));
     if (!snap.exists()) { showToast('Sala no encontrada ❌'); return; }
-    // currentWineAnswered uses -1 as "not answered"
     await set(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
       name, score:0, completed:0, finished:false, currentWineAnswered:-1
     });
@@ -435,7 +434,6 @@ function listenToRoom() {
   if (!firebaseReady) return;
   const { ref, onValue } = window._fb;
 
-  // Listen to ALL player changes — this is what drives the organizer panel
   onValue(ref(db, `rooms/${roomCode}/players`), snap => {
     cachedPlayers = snap.val() || {};
     updateWaitingList(cachedPlayers);
@@ -478,10 +476,10 @@ function renderOrganizerRows(players) {
     rowsEl.innerHTML = all.map(p => {
       const hasAnswered = Number(p.currentWineAnswered) === currentWine;
       return `<div class="org-player-row">
-        <div class="org-status-dot ${hasAnswered ? 'answered' : 'thinking'}"></div>
+        <div class="org-status-dot ${hasAnswered?'answered':'thinking'}"></div>
         <div class="org-player-name">${p.name}</div>
-        <div class="org-player-status ${hasAnswered ? 'answered' : 'thinking'}">
-          ${hasAnswered ? '✅ Respondido' : '⏳ Pensando...'}
+        <div class="org-player-status ${hasAnswered?'answered':'thinking'}">
+          ${hasAnswered?'✅ Respondido':'⏳ Pensando...'}
         </div>
       </div>`;
     }).join('');
@@ -511,7 +509,6 @@ function checkAllFinished(players) {
   }
 }
 
-// Reset currentWineAnswered to -1 for ALL players when organizer changes wine
 async function resetAllAnsweredFlags() {
   if (!firebaseReady) return;
   const { ref, get, update } = window._fb;
@@ -559,7 +556,6 @@ function updateOrganizerButtons() {
   document.getElementById('orgNextBtn').textContent = currentWine >= wines.length - 1
     ? '🏁 Finalizar Cata'
     : `Siguiente vino → (${currentWine+2}/${wines.length})`;
-  // Re-render rows with updated currentWine
   renderOrganizerRows(cachedPlayers);
 }
 
@@ -650,7 +646,6 @@ function renderWine() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// selectOption: ONLY local state, no Firebase write here
 window.selectOption = function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
@@ -673,7 +668,6 @@ function saveAnswer() {
   };
 }
 
-// nextWine: write currentWineAnswered = currentWine HERE, then push score + wine ratings
 window.nextWine = async function() {
   saveAnswer();
   const isLast = currentWine >= wines.length - 1;
@@ -683,17 +677,16 @@ window.nextWine = async function() {
     const { ref, update } = window._fb;
     const score = answers.filter(a=>a.correct).length;
     const completed = answers.filter(a=>a.guess).length;
-    // Atomic multi-path update: player data + wine rating in one write
-    const multiUpdate = {
-      [`rooms/${roomCode}/players/${myPlayerId}/score`]: score,
-      [`rooms/${roomCode}/players/${myPlayerId}/completed`]: completed,
-      [`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`]: wineAnsweredNow,
-    };
-    if (isLast) multiUpdate[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
+    // Build one atomic update with player data + wine rating
+    const updates = {};
+    updates[`rooms/${roomCode}/players/${myPlayerId}/score`] = score;
+    updates[`rooms/${roomCode}/players/${myPlayerId}/completed`] = completed;
+    updates[`rooms/${roomCode}/players/${myPlayerId}/currentWineAnswered`] = wineAnsweredNow;
+    if (isLast) updates[`rooms/${roomCode}/players/${myPlayerId}/finished`] = true;
     if (answers[wineAnsweredNow] && answers[wineAnsweredNow].rating) {
-      multiUpdate[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
+      updates[`rooms/${roomCode}/wineRatings/wine_${wineAnsweredNow}/${myPlayerId}`] = answers[wineAnsweredNow].rating;
     }
-    await update(ref(db), multiUpdate);
+    await update(ref(db), updates);
   }
 
   document.getElementById('tastingScreen').classList.add('hidden');
@@ -701,11 +694,37 @@ window.nextWine = async function() {
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
+// ── Helper: build podium stage HTML (shared by players & wines podium) ──
+function buildPodiumHTML(items) {
+  // items: array of { label, score, scoreLabel }
+  // sorted descending already; we display as 2nd-1st-3rd
+  const medals = ['🥇','🥈','🥉'];
+  const placeClass = ['place-1','place-2','place-3'];
+  const hasTwo = items.length >= 2;
+  const order = hasTwo ? [items[1], items[0], items[2]].filter(Boolean) : [items[0]];
+  const places = hasTwo ? [2,1,3] : [1];
+
+  return `<div class="podium-stage">
+    ${order.map((item, i) => {
+      const place = places[i];
+      return `<div class="podium-place ${placeClass[place-1]||''}">
+        <div class="podium-info">
+          <div class="podium-medal">${medals[place-1]||'🍷'}</div>
+          <div class="podium-pname">${item.label}</div>
+          <div class="podium-pscore">${item.scoreLabel}</div>
+        </div>
+        <div class="podium-block">${place}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 async function showPodium() {
   ['tastingScreen','wineWaitingScreen','organizerScreen','waitingScreen'].forEach(id =>
     document.getElementById(id).classList.add('hidden'));
   document.getElementById('podiumScreen').classList.remove('hidden');
 
+  // ── Podio jugadores ──
   let players = {};
   if (firebaseReady) {
     const { ref, get } = window._fb;
@@ -717,34 +736,20 @@ async function showPodium() {
   }
 
   const sorted = Object.values(players).sort((a,b)=>b.score-a.score);
-  const medals = ['🥇','🥈','🥉'];
-  const placeClass = ['place-1','place-2','place-3'];
-  // Build podium order: 2nd place left, 1st center, 3rd right (only for existing places)
-  const podiumOrder = sorted.length >= 2
-    ? [sorted[1], sorted[0], sorted[2]].filter(Boolean)
-    : [sorted[0]].filter(Boolean);
-  const podiumPlaces = sorted.length >= 2 ? [2,1,3] : [1];
 
-  document.getElementById('podiumWrap').innerHTML = `
-    <div class="podium-stage">
-      ${podiumOrder.map((p,i) => {
-        const place = podiumPlaces[i];
-        return `<div class="podium-place ${placeClass[place-1]||''}">
-          <div class="podium-avatar">${medals[place-1]||'🍷'}</div>
-          <div class="podium-pname">${p.name}</div>
-          <div class="podium-pscore">${p.score}/6</div>
-          <div class="podium-block">${place}</div>
-        </div>`;
-      }).join('')}
-    </div>`;
+  document.getElementById('podiumWrap').innerHTML = buildPodiumHTML(
+    sorted.map(p => ({ label: p.name, scoreLabel: `${p.score}/6` }))
+  );
 
+  const rankMedals = ['🥇','🥈','🥉'];
   document.getElementById('fullRanking').innerHTML = sorted.map((p,i) => `
     <div class="rank-row${p.name===participantName?' me':''}">
-      <div class="rank-pos" style="color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--gold)'}">${medals[i]||i+1}</div>
+      <div class="rank-pos" style="color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--gold)'}">${rankMedals[i]||i+1}</div>
       <div class="rank-name">${p.name}${p.name===participantName?' (tú)':''}</div>
       <div class="rank-score">${p.score}<span style="font-size:12px;color:rgba(253,246,236,0.5);">/6</span></div>
     </div>`).join('');
 
+  // ── Resumen personal ──
   if (!isOrganizer) {
     document.getElementById('summaryName').textContent = participantName;
     const score = answers.filter(a=>a.correct).length;
@@ -761,99 +766,58 @@ async function showPodium() {
       </div>`;
     }).join('');
     document.getElementById('personalSummaryCard').style.display = 'block';
-    // Total rating display
-    const totalRating = answers.reduce((sum, a) => sum + (a.rating || 0), 0);
-    document.getElementById('totalRatingDisplay').textContent = totalRating > 0 ? `${totalRating} / 60` : '—';
     if (score >= 4) launchConfetti();
   } else {
     document.getElementById('personalSummaryCard').style.display = 'none';
   }
 
-  // ── BEST WINE PODIUM ──────────────────────────────────────────────
-  let wineTotals = wines.map((w, i) => ({ name: w.correctAnswer, index: i, total: 0, count: 0 }));
+  // ── Podio mejor vino ──
+  let wineTotals = wines.map((w, i) => ({ name: w.correctAnswer, index: i, total: 0 }));
 
-  if (firebaseReady) {
-    const { ref: ref2, get: get2 } = window._fb;
-    try {
+  try {
+    if (firebaseReady) {
+      const { ref: ref2, get: get2 } = window._fb;
       const ratSnap = await get2(ref2(db, `rooms/${roomCode}/wineRatings`));
       const ratData = ratSnap.val() || {};
       wines.forEach((_, i) => {
         const wineKey = `wine_${i}`;
         if (ratData[wineKey]) {
-          const vals = Object.values(ratData[wineKey]).map(Number).filter(n => !isNaN(n) && n > 0);
+          const vals = Object.values(ratData[wineKey]).map(Number).filter(n => !isNaN(n));
           wineTotals[i].total = vals.reduce((s, v) => s + v, 0);
-          wineTotals[i].count = vals.length;
         }
       });
-    } catch(e) { console.warn('Error leyendo wineRatings:', e); }
-  }
+    } else {
+      answers.forEach((a, i) => {
+        if (a && a.rating) wineTotals[i].total = a.rating;
+      });
+    }
+  } catch(e) { console.warn('Error leyendo wineRatings:', e); }
 
-  // Siempre sumar también las respuestas locales del jugador actual (por si no se guardaron en Firebase)
-  if (!isOrganizer) {
-    answers.forEach((a, i) => {
-      if (a && a.rating) {
-        // Evitar doble conteo: solo añadir si no hay datos de Firebase para este jugador
-        const alreadyCounted = firebaseReady && wineTotals[i].count > 0;
-        if (!alreadyCounted) {
-          wineTotals[i].total += a.rating;
-          wineTotals[i].count += 1;
-        }
-      }
-    });
-  }
-
-  const sortedWines = [...wineTotals].sort((a, b) => b.total - a.total || a.index - b.index);
+  const sortedWines = [...wineTotals].sort((a, b) => b.total - a.total);
   const wMedals = ['🥇','🥈','🥉'];
-  const wColors = ['#FFD700','#C0C0C0','#CD7F32'];
-
-  // Podio visual: orden 2º - 1º - 3º
-  const wPodiumOrder = sortedWines.length >= 2
-    ? [sortedWines[1], sortedWines[0], sortedWines[2]].filter(Boolean)
-    : [sortedWines[0]].filter(Boolean);
-  const wPodiumPlaces = sortedWines.length >= 2 ? [2,1,3] : [1];
-  const wPlaceClass = ['place-1','place-2','place-3'];
-
-  const wPodiumStageHTML = `
-    <div class="podium-stage">
-      ${wPodiumOrder.map((w, i) => {
-        const place = wPodiumPlaces[i];
-        const avg = w.count > 0 ? (w.total / w.count).toFixed(1) : '—';
-        return `<div class="podium-place ${wPlaceClass[place-1]||''}">
-          <div class="podium-avatar" style="font-size:18px;">${wMedals[place-1]||'🍷'}</div>
-          <div class="podium-pname" style="max-width:90px;white-space:normal;text-align:center;font-size:9px;line-height:1.3;">${w.name}</div>
-          <div class="podium-pscore" style="font-size:14px;color:${wColors[place-1]||'var(--gold-light)'};">${w.total}pts</div>
-          <div style="font-size:10px;color:rgba(253,246,236,0.45);margin-bottom:4px;">avg ${avg}/10</div>
-          <div class="podium-block">${place}</div>
-        </div>`;
-      }).join('')}
-    </div>`;
-
-  const wFullRankHTML = sortedWines.map((w, i) => {
-    const avg = w.count > 0 ? (w.total / w.count).toFixed(1) : '—';
-    return `<div class="rank-row">
-      <div class="rank-pos" style="color:${wColors[i]||'var(--gold)'};">${wMedals[i]||i+1}</div>
-      <div class="rank-name" style="font-size:12px;line-height:1.3;">${w.name}</div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div class="rank-score" style="font-size:18px;">${w.total}<span style="font-size:11px;color:rgba(253,246,236,0.5);">pts</span></div>
-        <div style="font-size:10px;color:rgba(253,246,236,0.4);">avg ${avg}/10</div>
-      </div>
-    </div>`;
-  }).join('');
 
   const bestWineEl = document.getElementById('bestWinePodium');
   if (bestWineEl) {
-    bestWineEl.innerHTML = wPodiumStageHTML +
-      `<div style="font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 10px;font-weight:700;">Clasificación completa de vinos</div>` +
-      `<div class="full-ranking">${wFullRankHTML}</div>`;
+    bestWineEl.innerHTML =
+      buildPodiumHTML(sortedWines.map(w => ({ label: w.name, scoreLabel: `${w.total} pts` }))) +
+      `<div style="font-size:11px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin:12px 0 10px;font-weight:700;">Clasificación completa de vinos</div>
+      <div class="full-ranking">
+        ${sortedWines.map((w,i) => `
+          <div class="rank-row">
+            <div class="rank-pos" style="color:${i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--gold)'}">${wMedals[i]||i+1}</div>
+            <div class="rank-name" style="font-size:12px;">${w.name}</div>
+            <div class="rank-score" style="font-size:18px;">${w.total}<span style="font-size:11px;color:rgba(253,246,236,0.5);"> pts</span></div>
+          </div>`).join('')}
+      </div>`;
   }
 
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 window.sendResults = function() {
+  if (isOrganizer) { showToast('El organizador no tiene respuestas que enviar 👑'); return; }
   const orgEmail = document.getElementById('organizerEmail').value.trim();
   if (!orgEmail||!orgEmail.includes('@')) { showToast('Introduce el email del organizador 📧'); return; }
-  if (isOrganizer || answers.length === 0) { showToast('Solo los participantes pueden enviar resultados 🍷'); return; }
   const score = answers.filter(a=>a.correct).length;
   const subject = encodeURIComponent(`🍷 Cata a Ciegas — ${participantName} — ${score}/6 puntos`);
   let body = `RESULTADOS DE CATA A CIEGAS\n================================\nCatador: ${participantName}\nSala: ${roomCode}\nFecha: ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}\nPUNTUACIÓN FINAL: ${score}/6\n================================\n\n`;
