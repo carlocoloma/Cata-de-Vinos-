@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Cata a Ciegas — Live</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
+
+  :root {
+    --wine-dark: #3d0c11;
+    --wine-mid: #6b1a2a;
+    --wine-light: #9b2335;
+    --wine-rose: #c0394b;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #fdf6ec;
+    --glass-border: rgba(201,168,76,0.3);
+    --green: #2ecc71;
+    --red: #e74c3c;
+  }
+
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family:'Lato',sans-serif;
+    background:var(--wine-dark);
+    color:var(--cream);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-text-size-adjust:100%;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; top:-50%; left:-50%;
+    width:200%; height:200%;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(107,26,42,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(61,12,17,0.8) 0%, transparent 50%);
+    pointer-events:none; z-index:0;
+  }
+
+  .drops { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+  .drop { position:absolute; border-radius:50% 50% 50% 50%/60% 60% 40% 40%; background:radial-gradient(ellipse at 40% 30%,rgba(192,57,75,0.25),rgba(107,26,42,0.1)); border:1px solid rgba(201,168,76,0.1); animation:floatDrop linear infinite; }
+  @keyframes floatDrop { 0%{transform:translateY(110vh) rotate(0deg);opacity:0;} 10%{opacity:1;} 90%{opacity:0.6;} 100%{transform:translateY(-20vh) rotate(360deg);opacity:0;} }
+
+  .container { position:relative; z-index:1; max-width:480px; margin:0 auto; padding:0 0 60px; }
+
+  /* HEADER */
+  .header { text-align:center; padding:36px 24px 24px; }
+  .header::after { content:''; display:block; width:80px; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:16px auto 0; }
+  .wine-glass-svg { width:70px; height:88px; margin:0 auto 14px; display:block; filter:drop-shadow(0 0 20px rgba(201,168,76,0.4)); animation:glassGlow 3s ease-in-out infinite alternate; }
+  @keyframes glassGlow { from{filter:drop-shadow(0 0 10px rgba(201,168,76,0.3));} to{filter:drop-shadow(0 0 30px rgba(201,168,76,0.7));} }
+  .header h1 { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; letter-spacing:2px; color:var(--gold-light); }
+  .header h1 em { display:block; font-style:italic; font-size:16px; color:rgba(253,246,236,0.7); letter-spacing:4px; margin-top:4px; }
+  .header p { font-size:12px; color:rgba(253,246,236,0.5); letter-spacing:1px; margin-top:10px; }
+
+  /* LIVE BADGE */
+  .live-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(231,76,60,0.15); border:1px solid rgba(231,76,60,0.4); border-radius:20px; padding:4px 12px; font-size:11px; font-weight:700; color:#e74c3c; letter-spacing:1px; margin-top:10px; }
+  .live-dot { width:7px; height:7px; border-radius:50%; background:#e74c3c; animation:pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.4;transform:scale(0.7);} }
+
+  /* CARD */
+  .card { background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.03)); border:1px solid var(--glass-border); border-radius:20px; padding:24px; margin:0 16px 20px; backdrop-filter:blur(10px); box-shadow:0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.1); }
+
+  /* INPUTS */
+  .input-wrap { margin-bottom:14px; }
+  .input-wrap input {
+    width:100%; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); border-radius:12px;
+    padding:14px 18px; font-size:16px; color:var(--cream); font-family:'Lato',sans-serif;
+    outline:none; transition:border-color 0.3s; -webkit-appearance:none;
+  }
+  .input-wrap input::placeholder { color:rgba(253,246,236,0.35); }
+  .input-wrap input:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.15); }
+
+  /* BUTTONS */
+  .btn { display:block; width:100%; padding:14px; border:none; border-radius:14px; font-family:'Lato',sans-serif; font-size:14px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:all 0.25s; -webkit-appearance:none; touch-action:manipulation; }
+  .btn-primary { background:linear-gradient(135deg,var(--wine-rose),var(--wine-light)); color:var(--cream); box-shadow:0 4px 20px rgba(155,35,53,0.5); }
+  .btn-primary:active { transform:scale(0.98); }
+  .btn-gold { background:linear-gradient(135deg,var(--gold),#a07830); color:var(--wine-dark); box-shadow:0 4px 20px rgba(201,168,76,0.4); }
+  .btn-gold:active { transform:scale(0.98); }
+  .btn-ghost { background:transparent; border:1.5px solid rgba(201,168,76,0.4); color:rgba(253,246,236,0.7); font-size:13px; padding:11px; }
+  .btn-ghost:active { border-color:var(--gold); background:rgba(201,168,76,0.08); }
+  .btn-danger { background:transparent; border:1.5px solid rgba(231,76,60,0.4); color:rgba(231,76,60,0.8); font-size:13px; padding:11px; }
+  .btn-danger:active { border-color:var(--red); background:rgba(231,76,60,0.08); }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .btn-sm { padding:9px 14px; font-size:12px; border-radius:10px; }
+
+  /* PROGRESS */
+  .progress-bar-wrap { margin:0 16px 16px; }
+  .progress-label { display:flex; justify-content:space-between; font-size:12px; color:rgba(253,246,236,0.5); margin-bottom:6px; }
+  .progress-track { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--wine-rose),var(--gold)); border-radius:2px; transition:width 0.5s ease; }
+
+  /* WINE CARD */
+  .wine-number { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .wine-badge { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--gold-light); flex-shrink:0; }
+  .wine-number-text h3 { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
+  .wine-number-text span { font-size:11px; color:rgba(253,246,236,0.5); letter-spacing:1px; }
+
+  /* GUIDE */
+  .guide-toggle-btn { width:100%; background:rgba(201,168,76,0.1); border:1.5px solid rgba(201,168,76,0.35); border-radius:12px; padding:11px 16px; color:var(--gold-light); font-family:'Lato',sans-serif; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; touch-action:manipulation; -webkit-appearance:none; }
+  .guide-toggle-btn .arrow { transition:transform 0.3s; }
+  .guide-toggle-btn.open .arrow { transform:rotate(180deg); }
+  .guide-panel { max-height:0; overflow:hidden; transition:max-height 0.4s ease; background:rgba(0,0,0,0.2); border-radius:12px; margin-bottom:12px; }
+  .guide-panel.open { max-height:1400px; }
+  .guide-inner { padding:12px; }
+  .guide-item { padding:10px 0; border-bottom:1px solid rgba(201,168,76,0.1); }
+  .guide-item:last-child { border-bottom:none; }
+  .guide-item-header { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+  .g-name { font-family:'Playfair Display',serif; font-size:13px; color:var(--gold-light); font-weight:700; }
+  .g-do { font-size:10px; color:rgba(253,246,236,0.5); margin-left:auto; }
+  .guide-item p { font-size:11px; color:rgba(253,246,236,0.7); line-height:1.6; margin-bottom:6px; }
+  .guide-aromas { display:flex; flex-wrap:wrap; gap:4px; }
+  .guide-aroma { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.25); border-radius:20px; padding:2px 8px; font-size:10px; color:var(--gold-light); }
+
+  /* DESC */
+  .desc-box { background:rgba(0,0,0,0.25); border-left:3px solid var(--gold); border-radius:0 10px 10px 0; padding:12px 14px; margin-bottom:14px; }
+  .desc-label { font-size:10px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:5px; font-weight:700; }
+  .desc-box p { font-size:12px; line-height:1.7; color:rgba(253,246,236,0.85); font-style:italic; }
+
+  .aroma-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+  .aroma-tag { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:3px 10px; font-size:11px; color:var(--gold-light); }
+
+  /* OPTIONS */
+  .section-label { font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; font-weight:700; }
+  .wine-options { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:14px; }
+  .wine-option { background:rgba(0,0,0,0.25); border:1.5px solid rgba(201,168,76,0.2); border-radius:12px; padding:9px 7px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; color:rgba(253,246,236,0.7); line-height:1.4; touch-action:manipulation; }
+  .wine-option:active { border-color:var(--gold); background:rgba(201,168,76,0.1); }
+  .wine-option.selected { border-color:var(--gold); background:linear-gradient(135deg,rgba(201,168,76,0.2),rgba(155,35,53,0.2)); color:var(--gold-light); box-shadow:0 0 10px rgba(201,168,76,0.2); }
+  .wine-option .opt-emoji { font-size:18px; display:block; margin-bottom:3px; }
+  .wine-option .opt-name { font-weight:700; font-size:10px; }
+  .wine-option .opt-region { font-size:9px; opacity:0.7; }
+
+  /* RATING */
+  .rating-row { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:14px; }
+  .rating-btn { flex:1; min-width:26px; max-width:40px; height:36px; border:1.5px solid rgba(201,168,76,0.25); border-radius:8px; background:rgba(0,0,0,0.25); color:rgba(253,246,236,0.6); font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s; touch-action:manipulation; -webkit-appearance:none; font-family:'Lato',sans-serif; }
+  .rating-btn:active { transform:scale(0.92); }
+  .rating-btn.selected { background:linear-gradient(135deg,var(--gold),#a07830); color:var(--wine-dark); border-color:var(--gold); box-shadow:0 0 10px rgba(201,168,76,0.3); }
+
+  /* NAV */
+  .nav-buttons { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 16px 12px; }
+  .nav-buttons.single { grid-template-columns:1fr; }
+
+  /* ══ LIVE RANKING ══ */
+  .ranking-card { margin:0 16px 16px; }
+  .ranking-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .ranking-header h3 { font-family:'Playfair Display',serif; font-size:16px; color:var(--gold-light); }
+  .ranking-list { display:flex; flex-direction:column; gap:8px; }
+  .ranking-item { display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.2); border:1px solid rgba(201,168,76,0.15); border-radius:12px; padding:10px 14px; transition:all 0.4s; }
+  .ranking-item.me { border-color:rgba(201,168,76,0.5); background:rgba(201,168,76,0.08); }
+  .rank-pos { font-family:'Playfair Display',serif; font-size:16px; font-weight:700; color:var(--gold); width:24px; text-align:center; flex-shrink:0; }
+  .rank-pos.gold { color:#FFD700; }
+  .rank-pos.silver { color:#C0C0C0; }
+  .rank-pos.bronze { color:#CD7F32; }
+  .rank-info { flex:1; }
+  .rank-name { font-size:13px; font-weight:700; color:var(--cream); }
+  .rank-progress { font-size:11px; color:rgba(253,246,236,0.5); margin-top:2px; }
+  .rank-score { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--gold-light); }
+  .rank-bar-wrap { height:3px; background:rgba(255,255,255,0.08); border-radius:2px; margin-top:5px; overflow:hidden; }
+  .rank-bar { height:100%; background:linear-gradient(90deg,var(--wine-rose),var(--gold)); border-radius:2px; transition:width 0.6s ease; }
+
+  /* SUMMARY */
+  #summaryScreen { display:none; }
+  .score-circle-wrap { text-align:center; margin:10px 0 18px; }
+  .score-circle { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:3px solid var(--gold); display:inline-flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 0 30px rgba(201,168,76,0.4); animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes popIn { from{transform:scale(0);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .score-num { font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--gold-light); line-height:1; }
+  .score-denom { font-size:12px; color:rgba(253,246,236,0.6); margin-top:2px; }
+  .score-msg { font-family:'Playfair Display',serif; font-style:italic; font-size:14px; color:var(--gold-light); margin-top:10px; }
+
+  .summary-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid rgba(201,168,76,0.1); }
+  .summary-item:last-child { border-bottom:none; }
+  .sum-badge { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold-light); flex-shrink:0; }
+  .sum-info { flex:1; }
+  .sum-guess { font-size:12px; font-weight:700; }
+  .sum-guess.correct { color:var(--green); }
+  .sum-guess.wrong { color:var(--red); }
+  .sum-correct-ans { font-size:11px; color:rgba(253,246,236,0.5); margin-top:2px; }
+  .sum-rating { font-size:11px; color:var(--gold); margin-top:2px; }
+  .sum-icon { font-size:18px; flex-shrink:0; }
+
+  /* GOLD DIVIDER */
+  .gold-divider { display:flex; align-items:center; gap:10px; margin:4px 0 14px; }
+  .gold-divider::before,.gold-divider::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent); }
+  .gold-divider span { font-size:14px; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:300; align-items:center; justify-content:center; padding:24px; }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:linear-gradient(135deg,#4a1020,#2a0810); border:1px solid var(--glass-border); border-radius:20px; padding:28px 24px; max-width:340px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+  .modal-box h3 { font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); margin-bottom:10px; }
+  .modal-box p { font-size:13px; color:rgba(253,246,236,0.65); line-height:1.6; margin-bottom:20px; }
+  .modal-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  /* SETUP SCREEN */
+  .setup-tabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:20px; }
+  .tab-btn { padding:12px; border:1.5px solid rgba(201,168,76,0.3); border-radius:12px; background:transparent; color:rgba(253,246,236,0.6); font-family:'Lato',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.25s; touch-action:manipulation; -webkit-appearance:none; }
+  .tab-btn.active { border-color:var(--gold); background:rgba(201,168,76,0.12); color:var(--gold-light); }
+
+  .room-code-display { background:rgba(0,0,0,0.3); border:1px solid var(--gold); border-radius:12px; padding:16px; text-align:center; margin-bottom:16px; }
+  .room-code-display .code-label { font-size:11px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:6px; }
+  .room-code-display .code-value { font-family:'Playfair Display',serif; font-size:36px; font-weight:700; color:var(--gold-light); letter-spacing:8px; }
+
+  .waiting-list { margin-top:14px; }
+  .waiting-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(201,168,76,0.08); }
+  .waiting-item:last-child { border-bottom:none; }
+  .waiting-dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex-shrink:0; }
+  .waiting-name { font-size:13px; color:var(--cream); }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark)); border:1px solid var(--gold); color:var(--cream); padding:11px 22px; border-radius:30px; font-size:13px; font-weight:700; letter-spacing:1px; z-index:999; transition:transform 0.4s ease; box-shadow:0 8px 30px rgba(0,0,0,0.4); white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  .hidden { display:none !important; }
+  .screen { animation:fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+  #confettiCanvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:998; }
+
+  /* FIREBASE CONFIG NOTICE */
+  .config-notice { background:rgba(201,168,76,0.08); border:1px dashed rgba(201,168,76,0.4); border-radius:12px; padding:14px; margin-bottom:16px; font-size:12px; color:rgba(253,246,236,0.7); line-height:1.7; }
+  .config-notice strong { color:var(--gold-light); }
+  .config-notice code { background:rgba(0,0,0,0.3); padding:1px 6px; border-radius:4px; font-size:11px; color:var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="drops" id="drops"></div>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- RESTART MODAL -->
+<div class="modal-overlay" id="restartModal">
+  <div class="modal-box">
+    <h3>🔄 ¿Volver a empezar?</h3>
+    <p>Se perderán todas tus respuestas. ¿Estás seguro?</p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('restartModal')">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmRestart()">Sí, reiniciar</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <svg class="wine-glass-svg" viewBox="0 0 80 100" fill="none">
+      <line x1="40" y1="72" x2="40" y2="90" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M24 90 Q40 86 56 90" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M16 18 Q12 40 20 58 Q28 72 40 72 Q52 72 60 58 Q68 40 64 18 Z" fill="rgba(155,35,53,0.15)" stroke="#c9a84c" stroke-width="1.5"/>
+      <path d="M19 38 Q16 50 20 58 Q28 72 40 72 Q52 72 60 58 Q64 50 61 38 Z" fill="rgba(155,35,53,0.55)"/>
+      <ellipse cx="40" cy="38" rx="21" ry="4" fill="rgba(192,57,75,0.4)"/>
+      <ellipse cx="36" cy="37" rx="8" ry="2" fill="rgba(253,246,236,0.15)"/>
+      <path d="M16 18 Q40 24 64 18" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
+      <path d="M22 28 Q24 42 26 52" stroke="rgba(253,246,236,0.25)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1>Cata a Ciegas<em>Blind Tasting</em></h1>
+    <p>✦ Descubre el vino con tus sentidos ✦</p>
+    <div class="live-badge"><span class="live-dot"></span> LIVE MULTIPLAYER</div>
+  </div>
+
+  <!-- ══ SETUP SCREEN ══ -->
+  <div id="setupScreen" class="screen">
+
+    <div class="card">
+      <div style="text-align:center; margin-bottom:16px;">
+        <h2 style="font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); margin-bottom:6px;">Bienvenido, Catador</h2>
+        <p style="font-size:13px; color:rgba(253,246,236,0.6); line-height:1.6;">Probarás <strong style="color:var(--gold-light)">6 vinos crianza</strong> e identificarás cada uno.</p>
+      </div>
+
+      <div class="input-wrap">
+        <input type="text" id="participantName" placeholder="Tu nombre..." autocomplete="off" maxlength="30"/>
+      </div>
+
+      <div class="setup-tabs">
+        <button class="tab-btn active" id="tabCreate" onclick="switchTab('create')">🆕 Crear sala</button>
+        <button class="tab-btn" id="tabJoin" onclick="switchTab('join')">🔗 Unirse</button>
+      </div>
+
+      <div id="panelCreate">
+        <button class="btn btn-primary" onclick="createRoom()">🍷 Crear sala de cata</button>
+      </div>
+
+      <div id="panelJoin" class="hidden">
+        <div class="input-wrap" style="margin-top:0;">
+          <input type="text" id="roomCodeInput" placeholder="Código de sala (4 letras)..." maxlength="4" autocomplete="off" style="text-transform:uppercase; letter-spacing:4px; font-size:20px; text-align:center;"/>
+        </div>
+        <button class="btn btn-primary" onclick="joinRoom()">🔗 Unirse a la cata</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WAITING ROOM ══ -->
+  <div id="waitingScreen" class="screen hidden">
+    <div class="card">
+      <div style="text-align:center; margin-bottom:16px;">
+        <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:8px;">Sala de espera</div>
+        <div class="room-code-display">
+          <div class="code-label">Código de sala — comparte con los participantes</div>
+          <div class="code-value" id="displayRoomCode">----</div>
+        </div>
+        <p style="font-size:12px; color:rgba(253,246,236,0.55); margin-bottom:16px;">Esperando a que todos se unan...</p>
+      </div>
+      <div class="gold-divider"><span>👥</span></div>
+      <div style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:10px; font-weight:700;">Participantes conectados</div>
+      <div class="waiting-list" id="waitingList"></div>
+      <div style="margin-top:16px;" id="startBtnWrap">
+        <button class="btn btn-gold" id="startCataBtn" onclick="startCata()" style="display:none;">🍷 ¡Comenzar la Cata!</button>
+        <p style="font-size:12px; color:rgba(253,246,236,0.5); text-align:center;" id="waitingMsg">Esperando al organizador...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TASTING SCREEN ══ -->
+  <div id="tastingScreen" class="screen hidden">
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span id="progressText">Vino 1 de 6</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- LIVE MINI RANKING -->
+    <div class="card" style="padding:14px 16px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:11px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; font-weight:700;">🏆 Ranking en vivo</span>
+        <span class="live-badge" style="margin-top:0; padding:2px 8px; font-size:10px;"><span class="live-dot"></span> LIVE</span>
+      </div>
+      <div id="miniRanking"></div>
+    </div>
+
+    <div class="card" id="wineCard"></div>
+
+    <div id="navBtns" class="nav-buttons">
+      <button class="btn btn-ghost" id="backBtn" onclick="goBack()">← Volver</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextWine()" disabled>Siguiente →</button>
+    </div>
+    <div style="margin:0 16px;">
+      <button class="btn btn-danger" onclick="openModal('restartModal')">🔄 Volver a Empezar</button>
+    </div>
+  </div>
+
+  <!-- ══ SUMMARY SCREEN ══ -->
+  <div id="summaryScreen" class="screen">
+    <div class="card">
+      <div style="text-align:center; margin-bottom:14px;">
+        <div style="font-size:12px; letter-spacing:2px; color:rgba(253,246,236,0.5); text-transform:uppercase; margin-bottom:4px;">Catador</div>
+        <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light);" id="summaryName"></div>
+      </div>
+      <div class="score-circle-wrap">
+        <div class="score-circle">
+          <div class="score-num" id="scoreNum">0</div>
+          <div class="score-denom">de 6 puntos</div>
+        </div>
+        <div class="score-msg" id="scoreMsg"></div>
+      </div>
+      <div class="gold-divider"><span>🍇</span></div>
+      <div id="summaryList"></div>
+    </div>
+
+    <!-- FINAL RANKING -->
+    <div class="card ranking-card" style="margin:0 16px 20px;">
+      <div class="ranking-header">
+        <h3>🏆 Ranking Final</h3>
+        <span class="live-badge" style="margin-top:0;"><span class="live-dot"></span> LIVE</span>
+      </div>
+      <div class="ranking-list" id="finalRanking"></div>
+    </div>
+
+    <div class="card" style="text-align:center;">
+      <p style="font-size:13px; color:rgba(253,246,236,0.6); margin-bottom:12px; line-height:1.6;">Envía tus resultados al organizador.</p>
+      <div class="input-wrap">
+        <input type="email" id="organizerEmail" value="carlocoloma@gmail.com" placeholder="Email del organizador..."/>
+      </div>
+      <button class="btn btn-gold" onclick="sendResults()" style="margin-bottom:12px;">📧 Enviar Resultados</button>
+      <button class="btn btn-danger" onclick="openModal('restartModal')">🔄 Volver a Empezar</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// ══════════════════════════════════════════════════════
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBQqYRbbjT2oR4yrWDJaAJvwJzKL8N9cjA",
+  authDomain: "cata-de-vinos-143a0.firebaseapp.com",
+  databaseURL: "https://cata-de-vinos-143a0-default-rtdb.firebaseio.com",
+  projectId: "cata-de-vinos-143a0",
+  storageBucket: "cata-de-vinos-143a0.firebasestorage.app",
+  messagingSenderId: "360985295634",
+  appId: "1:360985295634:web:c2a923add6a7ecd73311cb",
+  measurementId: "G-LRQCC4EZGH"
+};
+// ══════════════════════════════════════════════════════
+//  WINE DATA
+// ══════════════════════════════════════════════════════
+const wines = [
+  { id:1, name:"Vino 1", correctAnswer:"Marqués de Riscal Crianza", shortDesc:"Clásico riojano de la bodega más antigua de la D.O. Rioja. 12 meses en barrica americana. Elegante, equilibrado y muy reconocible.", description:"Rojo rubí brillante con reflejos granate. Nariz aromática: frutos rojos maduros, vainilla y coco de la barrica americana, con fondo especiado de pimienta y clavo. En boca es equilibrado, con taninos suaves, acidez fresca y final medio-largo.", aromas:["Cereza","Ciruela","Vainilla","Coco","Pimienta","Clavo"] },
+  { id:2, name:"Vino 2", correctAnswer:"Faustino V Crianza", shortDesc:"Icónico vino riojano con botella esmerilada. Crianza en barrica americana y francesa. Suave, frutal y muy accesible.", description:"Rojo cereza de capa media con reflejos violáceos. Nariz fresca y afrutada: fresas, moras y frambuesas con notas de vainilla, tostado suave y un toque floral. En boca es amable y redondo, con taninos sedosos.", aromas:["Fresa","Mora","Frambuesa","Vainilla","Tostado","Floral"] },
+  { id:3, name:"Vino 3", correctAnswer:"Viña Albali Crianza", shortDesc:"Referente de Valdepeñas, D.O. manchega. Elaborado con Cencibel (Tempranillo). Carácter mediterráneo y relación calidad-precio excepcional.", description:"Rojo granate intenso con ribete violáceo. Nariz generosa: frutos negros maduros, mermelada, especias mediterráneas y un toque de chocolate. En boca es amplio y carnoso, con taninos firmes.", aromas:["Mora","Ciruela pasa","Mermelada","Tomillo","Chocolate","Madera"] },
+  { id:4, name:"Vino 4", correctAnswer:"Beronia Crianza", shortDesc:"Crianza de Rioja Alta con 12 meses en barrica americana. Estilo clásico riojano con gran expresión frutal y elegancia natural.", description:"Rojo rubí intenso con reflejos púrpura. Nariz expresiva: frutos rojos frescos, notas florales de violeta y un fondo de roble bien integrado con vainilla y especias. En boca destaca su frescura.", aromas:["Cereza","Grosella","Violeta","Vainilla","Especias","Fresco"] },
+  { id:5, name:"Vino 5", correctAnswer:"Protos Crianza", shortDesc:"Embajador de Ribera del Duero. Elaborado con Tinto Fino. Potente, estructurado y con la personalidad inconfundible del Duero.", description:"Rojo picota profundo con capa alta. Nariz potente: frutos negros maduros, notas minerales, pimienta negra, regaliz y un roble con toques de café y cacao. En boca es poderoso y estructurado.", aromas:["Mora","Arándano","Ciruela","Pimienta negra","Café","Cacao"] },
+  { id:6, name:"Vino 6", correctAnswer:"Pago de los Capellanes Crianza", shortDesc:"Joya de Ribera del Duero con viñas viejas. Crianza en barrica francesa. Complejo, elegante y con una profundidad que lo distingue del resto.", description:"Rojo granate oscuro con capa muy alta. Nariz compleja: mora, cassis, tierra húmeda, grafito, especias finas y un roble francés elegante con toques de cedro y tabaco. En boca es voluminoso y sedoso.", aromas:["Mora","Cassis","Tierra","Grafito","Cedro","Tabaco"] }
+];
+
+const wineOptions = [
+  { name:"Marqués de Riscal\nCrianza", region:"Rioja", emoji:"🍷" },
+  { name:"Faustino V\nCrianza", region:"Rioja", emoji:"🍷" },
+  { name:"Viña Albali\nCrianza", region:"Valdepeñas", emoji:"🍷" },
+  { name:"Beronia\nCrianza", region:"Rioja", emoji:"🍷" },
+  { name:"Protos\nCrianza", region:"Ribera del Duero", emoji:"🍷" },
+  { name:"Pago de los Capellanes\nCrianza", region:"Ribera del Duero", emoji:"🍷" }
+];
+
+const doPorVino = {
+  "Marqués de Riscal Crianza":"D.O. Rioja",
+  "Faustino V Crianza":"D.O. Rioja",
+  "Viña Albali Crianza":"D.O. Valdepeñas",
+  "Beronia Crianza":"D.O. Rioja",
+  "Protos Crianza":"D.O. Ribera del Duero",
+  "Pago de los Capellanes Crianza":"D.O. Ribera del Duero"
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let participantName = '';
+let currentWine = 0;
+let answers = [];
+let selectedOption = null;
+let selectedRating = null;
+let shuffledOptions = [];
+let roomCode = '';
+let isOrganizer = false;
+let myPlayerId = '';
+let db = null;
+let roomRef = null;
+let firebaseReady = false;
+
+// ══════════════════════════════════════════════════════
+//  FIREBASE INIT
+// ══════════════════════════════════════════════════════
+async function initFirebase() {
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getDatabase, ref, set, get, onValue, update, push } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+
+    const app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    window._fbFns = { ref, set, get, onValue, update, push };
+    firebaseReady = true;
+    return true;
+  } catch(e) {
+    console.warn("Firebase no disponible:", e);
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  ROOM MANAGEMENT
+// ══════════════════════════════════════════════════════
+function generateCode() {
+  return Math.random().toString(36).substring(2,6).toUpperCase();
+}
+
+function generatePlayerId() {
+  return 'p_' + Date.now() + '_' + Math.random().toString(36).substring(2,6);
+}
+
+window.switchTab = function(tab) {
+  document.getElementById('tabCreate').classList.toggle('active', tab==='create');
+  document.getElementById('tabJoin').classList.toggle('active', tab==='join');
+  document.getElementById('panelCreate').classList.toggle('hidden', tab!=='create');
+  document.getElementById('panelJoin').classList.toggle('hidden', tab!=='join');
+};
+
+window.createRoom = async function() {
+  const name = document.getElementById('participantName').value.trim();
+  if (!name) { showToast('Introduce tu nombre 🍷'); return; }
+  participantName = name;
+  myPlayerId = generatePlayerId();
+  isOrganizer = true;
+  roomCode = generateCode();
+
+  if (firebaseReady) {
+    const { ref, set, onValue } = window._fbFns;
+    roomRef = ref(db, `rooms/${roomCode}`);
+    await set(roomRef, {
+      status: 'waiting',
+      organizer: myPlayerId,
+      players: { [myPlayerId]: { name, score:0, completed:0, isOrganizer:true } }
+    });
+    listenToRoom();
+  }
+
+  showWaitingRoom();
+};
+
+window.joinRoom = async function() {
+  const name = document.getElementById('participantName').value.trim();
+  const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  if (!name) { showToast('Introduce tu nombre 🍷'); return; }
+  if (code.length !== 4) { showToast('Introduce el código de 4 letras'); return; }
+  participantName = name;
+  myPlayerId = generatePlayerId();
+  isOrganizer = false;
+  roomCode = code;
+
+  if (firebaseReady) {
+    const { ref, get, set, update, onValue } = window._fbFns;
+    roomRef = ref(db, `rooms/${roomCode}`);
+    const snap = await get(roomRef);
+    if (!snap.exists()) { showToast('Sala no encontrada ❌'); return; }
+    const playerRef = ref(db, `rooms/${roomCode}/players/${myPlayerId}`);
+    await set(playerRef, { name, score:0, completed:0, isOrganizer:false });
+    listenToRoom();
+  }
+
+  showWaitingRoom();
+};
+
+function listenToRoom() {
+  if (!firebaseReady) return;
+  const { onValue, ref } = window._fbFns;
+  const playersRef = ref(db, `rooms/${roomCode}/players`);
+  onValue(playersRef, snap => {
+    const players = snap.val() || {};
+    updateWaitingList(players);
+    updateRankings(players);
+  });
+  const statusRef = ref(db, `rooms/${roomCode}/status`);
+  onValue(statusRef, snap => {
+    if (snap.val() === 'started' && document.getElementById('waitingScreen').classList.contains('hidden') === false) {
+      if (!isOrganizer) beginTasting();
+    }
+  });
+}
+
+function updateWaitingList(players) {
+  const list = document.getElementById('waitingList');
+  if (!list) return;
+  list.innerHTML = Object.values(players).map(p => `
+    <div class="waiting-item">
+      <div class="waiting-dot"></div>
+      <div class="waiting-name">${p.name}${p.isOrganizer?' 👑':''}</div>
+    </div>`).join('');
+}
+
+function updateRankings(players) {
+  const sorted = Object.values(players).sort((a,b) => b.score - a.score);
+  const medals = ['🥇','🥈','🥉'];
+  const posClasses = ['gold','silver','bronze'];
+
+  // Mini ranking (during tasting)
+  const mini = document.getElementById('miniRanking');
+  if (mini) {
+    mini.innerHTML = sorted.map((p,i) => `
+      <div class="ranking-item${p.name===participantName?' me':''}">
+        <div class="rank-pos ${posClasses[i]||''}">${medals[i]||i+1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${p.name}${p.name===participantName?' (tú)':''}</div>
+          <div class="rank-progress">${p.completed||0}/6 vinos</div>
+          <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(p.score/6)*100}%"></div></div>
+        </div>
+        <div class="rank-score">${p.score}</div>
+      </div>`).join('');
+  }
+
+  // Final ranking
+  const final = document.getElementById('finalRanking');
+  if (final) {
+    final.innerHTML = sorted.map((p,i) => `
+      <div class="ranking-item${p.name===participantName?' me':''}">
+        <div class="rank-pos ${posClasses[i]||''}">${medals[i]||i+1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${p.name}${p.name===participantName?' (tú)':''}</div>
+          <div class="rank-progress">${p.completed||0}/6 vinos completados</div>
+        </div>
+        <div class="rank-score">${p.score}<span style="font-size:12px;color:rgba(253,246,236,0.5);">/6</span></div>
+      </div>`).join('');
+  }
+}
+
+// Local fallback ranking
+function updateLocalRanking() {
+  const score = answers.filter(a => a.guess && a.guess === a.correctAnswer).length;
+  const fakeData = { [myPlayerId]: { name: participantName, score, completed: answers.length } };
+  updateRankings(fakeData);
+}
+
+// ══════════════════════════════════════════════════════
+//  SCREENS
+// ══════════════════════════════════════════════════════
+function showWaitingRoom() {
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('waitingScreen').classList.remove('hidden');
+  document.getElementById('displayRoomCode').textContent = roomCode;
+
+  if (isOrganizer) {
+    document.getElementById('startCataBtn').style.display = 'block';
+    document.getElementById('waitingMsg').style.display = 'none';
+  }
+
+  if (!firebaseReady) {
+    // Local mode: show only self
+    updateWaitingList({ [myPlayerId]: { name: participantName, isOrganizer } });
+  }
+}
+
+window.startCata = function() {
+  if (firebaseReady) {
+    const { ref, update } = window._fbFns;
+    update(ref(db, `rooms/${roomCode}`), { status: 'started' });
+  }
+  beginTasting();
+};
+
+function beginTasting() {
+  currentWine = 0;
+  answers = [];
+  shuffledOptions = [];
+  document.getElementById('waitingScreen').classList.add('hidden');
+  document.getElementById('tastingScreen').classList.remove('hidden');
+  renderWine();
+}
+
+// ══════════════════════════════════════════════════════
+//  RENDER WINE
+// ══════════════════════════════════════════════════════
+window.toggleGuide = function() {
+  document.getElementById('guideToggleBtn').classList.toggle('open');
+  document.getElementById('guidePanel').classList.toggle('open');
+};
+
+function renderWine() {
+  const wine = wines[currentWine];
+  const pct = Math.round((currentWine / wines.length) * 100);
+  document.getElementById('progressText').textContent = `Vino ${currentWine+1} de ${wines.length}`;
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+
+  document.getElementById('backBtn').style.display = currentWine === 0 ? 'none' : 'block';
+  document.getElementById('navBtns').className = currentWine === 0 ? 'nav-buttons single' : 'nav-buttons';
+
+  if (!shuffledOptions[currentWine]) {
+    shuffledOptions[currentWine] = [...wineOptions].sort(() => Math.random() - 0.5);
+  }
+  const opts = shuffledOptions[currentWine];
+  const prev = answers[currentWine];
+  selectedOption = prev ? prev.guess : null;
+  selectedRating = prev ? prev.rating : null;
+
+  const aromaHTML = wine.aromas.map(a => `<span class="aroma-tag">${a}</span>`).join('');
+
+  const guideHTML = wines.map(w => `
+    <div class="guide-item">
+      <div class="guide-item-header">
+        <span>🍷</span>
+        <span class="g-name">${w.correctAnswer}</span>
+        <span class="g-do">${doPorVino[w.correctAnswer]||''}</span>
+      </div>
+      <p>${w.shortDesc}</p>
+      <div class="guide-aromas">${w.aromas.map(a=>`<span class="guide-aroma">${a}</span>`).join('')}</div>
+    </div>`).join('');
+
+  const optionsHTML = opts.map(w => {
+    const clean = w.name.replace('\n',' ');
+    return `<div class="wine-option${selectedOption===clean?' selected':''}" onclick="selectOption(this,'${clean}')">
+      <span class="opt-emoji">${w.emoji}</span>
+      <span class="opt-name">${w.name.replace('\n','<br>')}</span>
+      <span class="opt-region">${w.region}</span>
+    </div>`;
+  }).join('');
+
+  const ratingHTML = Array.from({length:10},(_,i)=>i+1).map(n =>
+    `<button class="rating-btn${selectedRating===n?' selected':''}" onclick="selectRating(this,${n})">${n}</button>`
+  ).join('');
+
+  document.getElementById('wineCard').innerHTML = `
+    <div class="wine-number">
+      <div class="wine-badge">${currentWine+1}</div>
+      <div class="wine-number-text">
+        <h3>${wine.name} 🍷</h3>
+        <span>LEE · HUELE · PRUEBA · ADIVINA</span>
+      </div>
+    </div>
+    <button class="guide-toggle-btn" id="guideToggleBtn" onclick="toggleGuide()">
+      <span>📋 Ficha de los 6 vinos</span><span class="arrow">▼</span>
+    </button>
+    <div class="guide-panel" id="guidePanel"><div class="guide-inner">${guideHTML}</div></div>
+    <div class="aroma-tags">${aromaHTML}</div>
+    <div class="gold-divider"><span>🍇</span></div>
+    <div class="section-label">🔍 ¿Cuál crees que es?</div>
+    <div class="wine-options">${optionsHTML}</div>
+    <div class="section-label">⭐ Tu puntuación para este vino</div>
+    <div class="rating-row">${ratingHTML}</div>
+  `;
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.disabled = !selectedOption;
+  nextBtn.textContent = currentWine < wines.length - 1 ? 'Siguiente →' : '🏁 Ver Puntuación';
+  window.scrollTo({ top:0, behavior:'smooth' });
+  if (!firebaseReady) updateLocalRanking();
+}
+
+window.selectOption = function(el, wineName) {
+  document.querySelectorAll('.wine-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedOption = wineName;
+  document.getElementById('nextBtn').disabled = false;
+};
+
+window.selectRating = function(el, n) {
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedRating = n;
+};
+
+// ══════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════
+function saveCurrentAnswer() {
+  const isCorrect = selectedOption && selectedOption === wines[currentWine].correctAnswer;
+  answers[currentWine] = {
+    wineId: wines[currentWine].id,
+    wineName: wines[currentWine].name,
+    correctAnswer: wines[currentWine].correctAnswer,
+    guess: selectedOption,
+    rating: selectedRating,
+    correct: isCorrect
+  };
+}
+
+async function pushScoreToFirebase() {
+  if (!firebaseReady) return;
+  const score = answers.filter(a => a.correct).length;
+  const completed = answers.filter(a => a.guess).length;
+  const { ref, update } = window._fbFns;
+  await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), { score, completed });
+}
+
+window.nextWine = async function() {
+  saveCurrentAnswer();
+  await pushScoreToFirebase();
+  currentWine++;
+  if (currentWine < wines.length) { renderWine(); } else { showSummary(); }
+};
+
+window.goBack = function() {
+  saveCurrentAnswer();
+  if (currentWine > 0) { currentWine--; renderWine(); showToast('← Volviendo al vino anterior'); }
+};
+
+// ══════════════════════════════════════════════════════
+//  SUMMARY
+// ══════════════════════════════════════════════════════
+function showSummary() {
+  document.getElementById('tastingScreen').classList.add('hidden');
+  document.getElementById('summaryScreen').style.display = 'block';
+  document.getElementById('summaryName').textContent = participantName;
+
+  let score = answers.filter(a => a.correct).length;
+  document.getElementById('scoreNum').textContent = score;
+  const msgs = {0:"Sigue practicando... 🍇",1:"¡Algo captaste! 🌱",2:"Buen intento, catador 🍷",3:"¡Mitad del camino! 👏",4:"¡Muy buen paladar! 🌟",5:"¡Casi perfecto! 🏅",6:"¡Nariz y paladar de oro! 🏆"};
+  document.getElementById('scoreMsg').textContent = msgs[score] || '';
+
+  document.getElementById('summaryList').innerHTML = answers.map((a,i) => {
+    const correctLine = !a.correct ? `<div class="sum-correct-ans">✔ Correcto: <strong style="color:rgba(46,204,113,0.8)">${a.correctAnswer}</strong></div>` : '';
+    const ratingLine = a.rating ? `<div class="sum-rating">⭐ Tu puntuación: ${a.rating}/10</div>` : '';
+    return `<div class="summary-item">
+      <div class="sum-badge">${i+1}</div>
+      <div class="sum-info">
+        <div class="sum-guess ${a.correct?'correct':'wrong'}">→ ${a.guess||'Sin respuesta'}</div>
+        ${correctLine}${ratingLine}
+      </div>
+      <div class="sum-icon">${a.correct?'✅':'❌'}</div>
+    </div>`;
+  }).join('');
+
+  if (!firebaseReady) updateLocalRanking();
+  if (score >= 4) launchConfetti();
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ══════════════════════════════════════════════════════
+//  EMAIL
+// ══════════════════════════════════════════════════════
+window.sendResults = function() {
+  const orgEmail = document.getElementById('organizerEmail').value.trim();
+  if (!orgEmail || !orgEmail.includes('@')) { showToast('Introduce el email del organizador 📧'); return; }
+  const score = answers.filter(a => a.correct).length;
+  const subject = encodeURIComponent(`🍷 Cata a Ciegas — ${participantName} — ${score}/6 puntos`);
+  let body = `RESULTADOS DE CATA A CIEGAS\n================================\n`;
+  body += `Catador: ${participantName}\nSala: ${roomCode}\n`;
+  body += `Fecha: ${new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'})}\n`;
+  body += `PUNTUACIÓN FINAL: ${score}/6\n================================\n\n`;
+  answers.forEach((a,i) => {
+    body += `VINO ${i+1} — ${a.wineName}\nMi respuesta: ${a.guess||'Sin respuesta'}\nRespuesta correcta: ${a.correctAnswer}\nResultado: ${a.correct?'✅ ACIERTO':'❌ FALLO'}\nMi puntuación al vino: ${a.rating?a.rating+'/10':'Sin puntuar'}\n---\n`;
+  });
+  body += `\n[Enviado desde la app de Cata a Ciegas]`;
+  window.location.href = `mailto:${orgEmail}?subject=${subject}&body=${encodeURIComponent(body)}`;
+  showToast('¡Abriendo tu app de correo! 📬');
+};
+
+// ══════════════════════════════════════════════════════
+//  RESTART
+// ══════════════════════════════════════════════════════
+window.openModal = function(id) { document.getElementById(id).classList.add('show'); };
+window.closeModal = function(id) { document.getElementById(id).classList.remove('show'); };
+window.confirmRestart = function() {
+  closeModal('restartModal');
+  participantName=''; currentWine=0; answers=[]; shuffledOptions=[]; selectedOption=null; selectedRating=null; roomCode=''; isOrganizer=false;
+  document.getElementById('participantName').value='';
+  document.getElementById('tastingScreen').classList.add('hidden');
+  document.getElementById('waitingScreen').classList.add('hidden');
+  document.getElementById('summaryScreen').style.display='none';
+  document.getElementById('setupScreen').classList.remove('hidden');
+  document.getElementById('progressFill').style.width='0%';
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast('¡Listo para una nueva cata! 🍷');
+};
+
+// ══════════════════════════════════════════════════════
+//  CONFETTI
+// ══════════════════════════════════════════════════════
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const colors=['#c9a84c','#9b2335','#c0394b','#fdf6ec','#e8c97a'];
+  const pieces=Array.from({length:80},()=>({x:Math.random()*canvas.width,y:-20,r:4+Math.random()*6,color:colors[Math.floor(Math.random()*colors.length)],vx:(Math.random()-0.5)*4,vy:2+Math.random()*4,rot:Math.random()*360,vrot:(Math.random()-0.5)*8}));
+  let frame=0;
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);pieces.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6);ctx.restore();p.x+=p.vx;p.y+=p.vy;p.rot+=p.vrot;p.vy+=0.05;});frame++;if(frame<180)requestAnimationFrame(draw);else ctx.clearRect(0,0,canvas.width,canvas.height);}
+  draw();
+}
+
+// ══════════════════════════════════════════════════════
+//  TOAST & DROPS
+// ══════════════════════════════════════════════════════
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+window.showToast = showToast;
+
+function initDrops() {
+  const c=document.getElementById('drops');
+  for(let i=0;i<10;i++){const d=document.createElement('div');d.className='drop';const s=20+Math.random()*60;d.style.cssText=`width:${s}px;height:${s*1.3}px;left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${-Math.random()*15}s;`;c.appendChild(d);}
+}
+initDrops();
+
+// ══════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════
+initFirebase().then(ready => {
+  if (!ready) showToast('Modo local activado (sin Firebase)');
+});
+
+document.getElementById('participantName').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('participantName').blur(); });
+document.getElementById('roomCodeInput')?.addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+</script>
+</body>
+</html>
