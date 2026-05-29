@@ -644,19 +644,12 @@ function renderWine() {
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── selectOption: write to Firebase immediately so organizer sees it ──
-window.selectOption = async function(el, wineName) {
+// ── selectOption: only update local state, NOT Firebase yet ──
+window.selectOption = function(el, wineName) {
   document.querySelectorAll('.wine-option').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
   selectedOption = wineName;
   document.getElementById('nextBtn').disabled = false;
-  // Write answered flag immediately
-  if (firebaseReady) {
-    const { ref, update } = window._fb;
-    await update(ref(db, `rooms/${roomCode}/players/${myPlayerId}`), {
-      currentWineAnswered: currentWine
-    });
-  }
 };
 
 window.selectRating = function(el, n) {
