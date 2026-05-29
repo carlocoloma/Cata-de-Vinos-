@@ -449,17 +449,22 @@ function listenToRoom() {
       const isOnWaiting = !waiting.classList.contains('hidden');
 
       if (isOnTasting || isOnWaiting) {
-        // Si el participante está esperando, avanzar al nuevo vino del organizador
-        if (isOnWaiting) {
-          currentWine = idx;
-          selectedOption = null; selectedRating = null;
-          editingPrev = false;
-          waiting.classList.add('hidden');
-          tasting.classList.remove('hidden');
+        if (editingPrev) {
+          // Está editando un vino anterior: no interrumpir,
+          // al confirmar saltará al vino correcto del organizador
+          // Solo actualizamos el botón para reflejar el nuevo destino
           renderWine();
+          return;
         }
-        // Si está en modo edición de vino anterior y el organizador avanzó, no interrumpir
-        // (el participante volverá al vino correcto al confirmar su selección)
+        // En cualquier otro caso (esperando o respondiendo), mover al nuevo vino del organizador
+        currentWine = idx;
+        selectedOption = answers[idx] ? answers[idx].guess : null;
+        selectedRating = answers[idx] ? answers[idx].rating : null;
+        editingPrev = false;
+        waiting.classList.add('hidden');
+        tasting.classList.remove('hidden');
+        renderWine();
+        showToast(`🍷 Vino ${idx + 1} — ¡A catar!`);
       }
     }
   });
