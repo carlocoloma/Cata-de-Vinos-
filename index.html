@@ -591,6 +591,11 @@ window.toggleGuide = function() {
   document.getElementById('guidePanel').classList.toggle('open');
 };
 
+window.togglePicks = function() {
+  document.getElementById('picksToggleBtn').classList.toggle('open');
+  document.getElementById('picksPanel').classList.toggle('open');
+};
+
 window.toggleMyPicks = function() {
   document.getElementById('myPicksToggleBtn').classList.toggle('open');
   document.getElementById('myPicksPanel').classList.toggle('open');
@@ -648,6 +653,29 @@ function renderWine() {
   const ratingHTML = Array.from({length:10},(_,i)=>i+1).map(n =>
     `<button class="rating-btn${selectedRating===n?' selected':''}" onclick="selectRating(this,${n})">${n}</button>`
   ).join('');
+
+  // ── Mis selecciones anteriores ──
+  const prevAnswers = answers.filter((a,i) => a && a.guess && i !== currentWine);
+  let picksHTML = '';
+  if (prevAnswers.length > 0) {
+    const rows = prevAnswers.map(a => {
+      const wineIdx = wines.findIndex(w => w.id === a.wineId);
+      const label = `Vino ${wineIdx + 1}`;
+      const ratingStr = a.rating ? ` · ⭐${a.rating}/10` : '';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.08);">
+        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--wine-rose),var(--wine-dark));border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--gold-light);flex-shrink:0;font-weight:700;">${wineIdx+1}</div>
+        <div style="flex:1;font-size:11px;color:rgba(253,246,236,0.8);">${a.guess}${ratingStr}</div>
+      </div>`;
+    }).join('');
+    picksHTML = `
+    <button class="guide-toggle-btn" id="picksToggleBtn" onclick="togglePicks()" style="margin-bottom:12px;background:rgba(155,35,53,0.12);border-color:rgba(192,57,75,0.35);color:rgba(253,246,236,0.8);">
+      <span>🗒️ Mis selecciones anteriores (${prevAnswers.length}/${wines.length})</span><span class="arrow">▼</span>
+    </button>
+    <div class="guide-panel" id="picksPanel" style="margin-bottom:12px;">
+      <div class="guide-inner">${rows}</div>
+    </div>`;
+  }
+
   document.getElementById('wineCard').innerHTML = `
     <div class="wine-number">
       <div class="wine-badge">${currentWine+1}</div>
@@ -658,6 +686,7 @@ function renderWine() {
     </button>
     <div class="guide-panel" id="guidePanel"><div class="guide-inner">${guideHTML}</div></div>
     ${renderMyPicksHTML()}
+    ${picksHTML}
     <div class="section-label">🔍 ¿Cuál crees que es?</div>
     <div class="wine-options">${optionsHTML}</div>
     <div class="section-label">⭐ Tu puntuación para este vino</div>
